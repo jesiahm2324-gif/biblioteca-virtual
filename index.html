@@ -170,6 +170,9 @@ input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none;display
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
     </button>
     <div class="nombre" id="lecTitulo"></div>
+    <button class="btn-icono" id="lecCompartir" aria-label="Compartir este documento">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6"/></svg>
+    </button>
     <button class="btn-icono" id="lecFav" aria-label="Marcar como favorito" aria-pressed="false">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z"/></svg>
     </button>
@@ -772,7 +775,7 @@ async function abrir(d, pagina, buscar) {
   if (!pdfLib()) return aviso('El lector necesita internet la primera vez. Conéctese y vuelva a intentarlo.');
   cerrarLector(true);
   const gen = ++R.gen;
-  R.doc = d; R.zoom = 1; R.hits = []; R.hit = -1; R.textos = E.textos.has(d.id) ? E.textos.get(d.id).pages : null;
+  R.doc = d; R.blob = null; R.zoom = 1; R.hits = []; R.hit = -1; R.textos = E.textos.has(d.id) ? E.textos.get(d.id).pages : null;
   $('lecTitulo').textContent = d.titulo; pintarFavLector();
   $('lecBarraBuscar').classList.add('oculto'); $('lecQ').value = ''; $('lecCuenta').textContent = '';
   const cont = $('paginas'); cont.textContent = ''; cont.append(el('div', { class: 'cargando' }, 'Abriendo…'));
@@ -780,6 +783,7 @@ async function abrir(d, pagina, buscar) {
   if (!R.abierto) { history.pushState({ lector: 1 }, ''); R.abierto = true; }
   try {
     const buf = await datosDoc(d);
+    R.blob = new Blob([buf], { type: 'application/pdf' }); // copia para compartir (el lector se queda con el original)
     const pdf = await pdfLib().getDocument({ data: buf }).promise;
     if (gen !== R.gen) { cerrarPdf(pdf); return; }
     R.pdf = pdf;
@@ -878,6 +882,22 @@ function pintarFavLector() {
   b.querySelector('svg').setAttribute('fill', on ? 'currentColor' : 'none'); b.style.color = on ? '#CA8A04' : '';
 }
 $('lecFav').addEventListener('click', () => R.doc && alternarFav(R.doc.id));
+// Compartir el PDF abierto. Se llama sin esperas para que el iPhone muestre el menú de compartir.
+$('lecCompartir').addEventListener('click', () => {
+  const d = R.doc; if (!d) return;
+  if (!R.blob) return aviso('Espere a que termine de abrir el documento.');
+  const nombre = d.path ? d.path.split('/').pop() : limpiarNombre(d.titulo);
+  const archivo = new File([R.blob], nombre, { type: 'application/pdf' });
+  const texto = d.titulo + ' · Biblioteca Virtual';
+  let p;
+  if (navigator.canShare && navigator.canShare({ files: [archivo] })) p = navigator.share({ files: [archivo], title: texto });
+  else if (navigator.share) p = navigator.share({ title: texto, text: texto, url: d.local ? URL_APP() : d.url });
+  else {
+    const a = el('a', { href: URL.createObjectURL(archivo), download: nombre }); document.body.append(a); a.click(); a.remove();
+    return;
+  }
+  p.catch((e) => { if (e && e.name !== 'AbortError') aviso('No se pudo compartir. Intente de nuevo.'); });
+});
 $('lecBuscar').addEventListener('click', () => {
   const f = $('lecBarraBuscar'); f.classList.toggle('oculto');
   if (!f.classList.contains('oculto')) $('lecQ').focus();
