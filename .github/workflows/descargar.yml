@@ -1,0 +1,36 @@
+name: Descargar leyes
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  descargar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Descargar PDF
+        run: |
+          bajar() {
+            mkdir -p "documentos/$1"
+            destino="documentos/$1/$2"
+            if [ -f "$destino" ]; then echo "Ya existe: $destino"; return; fi
+            if curl -sSL -A "Mozilla/5.0" --max-time 180 -o /tmp/doc.pdf "$3" && head -c 4 /tmp/doc.pdf | grep -q "%PDF"; then
+              mv /tmp/doc.pdf "$destino"; echo "Descargado: $destino"
+            else
+              echo "No se pudo descargar: $2"
+            fi
+          }
+          bajar portuario Ley-431-Transito.pdf https://www.leybook.com/doc/28081/pdf
+          bajar portuario Ley-838-General-de-Puertos.pdf https://www.leybook.com/doc/25962/pdf
+          bajar portuario Reglamento-Ley-838.pdf https://www.leybook.com/doc/26169/pdf
+          bajar portuario Ley-Servicio-de-Practicaje.pdf https://leybook.com/doc/4400/pdf
+          bajar portuario CONVEMAR-UNCLOS-1982.pdf https://www.un.org/depts/los/convention_agreements/texts/unclos/convemar_es.pdf
+          bajar laboral Ley-476-Servicio-Civil-y-Carrera-Administrativa.pdf https://www.leybook.com/doc/32870/pdf
+          bajar laboral Reglamento-Ley-476.pdf https://www.leybook.com/doc/32188/pdf
+          bajar laboral Reglamento-Ley-822.pdf https://www.leybook.com/doc/16532/pdf
+      - name: Guardar en el repositorio
+        run: |
+          git config user.name "Biblioteca Virtual"
+          git config user.email "actions@github.com"
+          git add documentos
+          git diff --cached --quiet || git commit -m "Agregar leyes descargadas"
+          git push
