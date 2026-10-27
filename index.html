@@ -287,21 +287,32 @@ const todos = () => E.docs.concat(E.locales);
 const porId = (id) => todos().find((d) => d.id === id);
 
 /* ================= Lista del repositorio ================= */
-const esPdf = (i) => i.type === 'file' && /\.pdf$/i.test(i.name);
-function hacerDoc(i, area) {
-  return { id: 'repo:' + i.path, titulo: titulo(i.name), area: area.toLowerCase(), url: './' + i.path.split('/').map(encodeURIComponent).join('/'), size: i.size, sha: i.sha };
+// El área es la carpeta donde está el PDF, esté donde esté en el repositorio:
+// documentos/portuario/x.pdf y documentos/documentos/Portuario/x.pdf van a "portuario".
+function areaDeRuta(path) {
+  const partes = path.split('/');
+  if (partes.length < 2) return 'otros';
+  const carpeta = plegar(partes[partes.length - 2]).replace(/[^a-z0-9]+/g, '');
+  if (!carpeta || carpeta === 'documentos' || carpeta === 'documento') return 'otros';
+  if (carpeta.startsWith('codigo')) return 'codigos';
+  if (carpeta.startsWith('laboral')) return 'laboral';
+  if (carpeta.startsWith('portuari') || carpeta.startsWith('puerto')) return 'portuario';
+  if (carpeta.startsWith('pecuari') || carpeta.startsWith('ganad')) return 'pecuario';
+  return carpeta;
 }
 async function listarRepo() {
-  const base = `https://api.github.com/repos/${OWNER}/${REPO}/contents/documentos`;
-  const r = await fetch(base, { headers: { Accept: 'application/vnd.github+json' }, cache: 'no-store' });
-  if (r.status === 404) return { docs: [], vacio: true };
-  if (r.status === 403) throw new Error('GitHub limitó las consultas por un rato. Intente en unos minutos.');
+  let r;
+  for (const rama of ['main', 'master']) {
+    r = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/git/trees/${rama}?recursive=1`, { headers: { Accept: 'application/vnd.github+json' }, cache: 'no-store' });
+    if (r.status !== 404) break;
+  }
+  if (r.status === 404 || r.status === 409) return { docs: [], vacio: true };
+  if (r.status === 403 || r.status === 429) throw new Error('GitHub limitó las consultas por un rato. Intente en unos minutos.');
   if (!r.ok) throw new Error('No se pudo leer la lista (' + r.status + ').');
-  const items = await r.json();
-  const docs = items.filter(esPdf).map((i) => hacerDoc(i, 'otros'));
-  const dirs = items.filter((i) => i.type === 'dir');
-  const subs = await Promise.all(dirs.map((d) => fetch(d.url, { headers: { Accept: 'application/vnd.github+json' }, cache: 'no-store' }).then((x) => x.ok ? x.json() : []).catch(() => [])));
-  subs.forEach((arr, k) => (Array.isArray(arr) ? arr : []).filter(esPdf).forEach((i) => docs.push(hacerDoc(i, dirs[k].name))));
+  const data = await r.json();
+  const docs = (data.tree || [])
+    .filter((t) => t.type === 'blob' && /\.pdf$/i.test(t.path))
+    .map((t) => ({ id: 'repo:' + t.path, titulo: titulo(t.path.split('/').pop()), area: areaDeRuta(t.path), url: './' + t.path.split('/').map(encodeURIComponent).join('/'), size: t.size, sha: t.sha }));
   return { docs, vacio: false };
 }
 async function cargarRepo(forzar) {
@@ -409,7 +420,7 @@ function pintar() {
     return;
   }
   if (!E.docs.length) {
-    m.append(vacio('La biblioteca está vacía', 'Suba sus PDF a GitHub, dentro de ', el('code', null, 'documentos/laboral'), ', ', el('code', null, 'documentos/codigos'), ', ', el('code', null, 'documentos/portuario'), ' o ', el('code', null, 'documentos/pecuario'), '. Aparecerán aquí solos.'));
+    m.append(vacio('La biblioteca está vacía', 'Suba sus PDF a GitHub dentro de una carpeta llamada ', el('code', null, 'laboral'), ', ', el('code', null, 'codigos'), ', ', el('code', null, 'portuario'), ' o ', el('code', null, 'pecuario'), '. Aparecerán aquí solos.'));
     return;
   }
 
