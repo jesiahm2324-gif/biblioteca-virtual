@@ -7,26 +7,87 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Descargar PDF
+      - name: Preparar lector de PDF
+        run: sudo apt-get install -y -qq poppler-utils > /dev/null
+      - name: Descargar y comprobar cada ley
+        shell: python3 {0}
         run: |
-          bajar() {
-            mkdir -p "documentos/$1"
-            destino="documentos/$1/$2"
-            if [ -f "$destino" ]; then echo "Ya existe: $destino"; return; fi
-            if curl -sSL -A "Mozilla/5.0" --max-time 180 -o /tmp/doc.pdf "$3" && head -c 4 /tmp/doc.pdf | grep -q "%PDF"; then
-              mv /tmp/doc.pdf "$destino"; echo "Descargado: $destino"
-            else
-              echo "No se pudo descargar: $2"
-            fi
-          }
-          bajar portuario Ley-431-Transito.pdf https://www.leybook.com/doc/28081/pdf
-          bajar portuario Ley-838-General-de-Puertos.pdf https://www.leybook.com/doc/25962/pdf
-          bajar portuario Reglamento-Ley-838.pdf https://www.leybook.com/doc/26169/pdf
-          bajar portuario Ley-Servicio-de-Practicaje.pdf https://leybook.com/doc/4400/pdf
-          bajar portuario CONVEMAR-UNCLOS-1982.pdf https://www.un.org/depts/los/convention_agreements/texts/unclos/convemar_es.pdf
-          bajar laboral Ley-476-Servicio-Civil-y-Carrera-Administrativa.pdf https://www.leybook.com/doc/32870/pdf
-          bajar laboral Reglamento-Ley-476.pdf https://www.leybook.com/doc/32188/pdf
-          bajar laboral Reglamento-Ley-822.pdf https://www.leybook.com/doc/16532/pdf
+          import os, re, subprocess, unicodedata, urllib.request
+
+          # Cada documento: área, nombre, palabras que deben estar al inicio del PDF,
+          # palabras del título que lo descartan (reformas, reglamentos) y enlaces posibles.
+          L = 'https://www.leybook.com/doc/%s/pdf'
+          DOCS = [
+            ('codigos', 'Codigo-Penal-Ley-641.pdf', ['641', 'PENAL'], ['PROCESAL'], ['https://perso.unifr.ch/derechopenal/assets/files/legislacion/l_20080616_67.pdf', 'https://faolex.fao.org/docs/pdf/nic86641.pdf'] + [L % n for n in (14255, 33929, 19503, 17639, 25595)]),
+            ('codigos', 'Codigo-Procesal-Penal-Ley-406.pdf', ['406', 'PROCESAL PENAL'], [], [L % 33285]),
+            ('codigos', 'Codigo-Civil.pdf', ['CODIGO CIVIL', 'NICARAGUA'], ['PROCEDIMIENTO', 'PROCESAL'], ['https://www.wipo.int/wipolex/edocs/lexdocs/laws/es/ni/ni029es.pdf', L % 16184]),
+            ('codigos', 'Codigo-Procesal-Civil-Ley-902.pdf', ['902', 'PROCESAL CIVIL'], [], [L % n for n in (18416, 17610, 20145, 308)]),
+            ('codigos', 'Codigo-Procesal-del-Trabajo-Ley-815.pdf', ['815', 'PROCESAL DEL TRABAJO'], [], [L % 1371]),
+            ('codigos', 'Codigo-de-Familia-Ley-870.pdf', ['870', 'FAMILIA'], [], [L % n for n in (17642, 17928)]),
+            ('codigos', 'Codigo-de-Comercio.pdf', ['CODIGO DE COMERCIO', 'NICARAGUA'], [], [L % n for n in (19403, 15999, 14612, 4833)]),
+            ('codigos', 'Codigo-de-la-Ninez-y-la-Adolescencia-Ley-287.pdf', ['287', 'NINEZ'], [], ['https://sajurin.enriquebolanos.org/docs/98LEY%20287.pdf', 'https://oas.org/dil/esp/codigo_de_la_ninez_y_la_adolescencia_nicaragua.pdf', 'https://cerlalc.org/wp-content/uploads/2018/09/79_Ley_287_Nicaragua.pdf', L % 592]),
+            ('laboral', 'Codigo-del-Trabajo-Ley-185.pdf', ['185', 'CODIGO DEL TRABAJO'], ['PROCESAL'], [L % n for n in (5014, 1180, 943, 672)] + ['https://sajurin.enriquebolanos.org/docs/96LEY%20185.pdf']),
+            ('laboral', 'Ley-618-Higiene-y-Seguridad-del-Trabajo.pdf', ['618', 'HIGIENE'], ['REGLAMENTO'], [L % 10445, 'https://faolex.fao.org/docs/pdf/nic201139.pdf', 'https://faolex.fao.org/docs/pdf/nic201141.pdf', 'https://cenida.una.edu.ni/relectronicos/REN363.11A798.pdf']),
+            ('laboral', 'Ley-438-Probidad-de-los-Servidores-Publicos.pdf', ['438', 'PROBIDAD'], [], [L % n for n in (826, 26950, 1199, 26745)]),
+            ('laboral', 'Ley-822-Concertacion-Tributaria.pdf', ['822', 'CONCERTACION TRIBUTARIA', 'TEXTO CONSOLIDADO'], ['REGLAMENTO'], [L % n for n in (34139, 27663, 27298, 22879, 17957)]),
+            ('laboral', 'Ley-539-Seguridad-Social.pdf', ['539', 'SEGURIDAD SOCIAL'], ['REGLAMENTO'], [L % n for n in (976, 1021, 12501, 16839)]),
+            ('portuario', 'Ley-399-Transporte-Acuatico.pdf', ['399', 'TRANSPORTE ACUATICO'], ['REGLAMENTO'], ['https://faolex.fao.org/docs/pdf/nic30576.pdf'] + [L % n for n in (763, 33968, 31823, 32766, 31824)]),
+            ('portuario', 'Reglamento-Transporte-Acuatico-Decreto-4877.pdf', ['REGLAMENTO', 'TRANSPORTE ACUATICO'], [], ['https://faolex.fao.org/docs/pdf/nic185687.pdf', 'https://faolex.fao.org/docs/pdf/nic180738.pdf'] + [L % n for n in (33968, 31824, 33287, 32736, 32766, 9089, 31823)]),
+            ('portuario', 'Convenio-MARPOL-73-78.pdf', ['CONTAMINACION', 'BUQUES'], [], ['https://www.gob.mx/cms/uploads/attachment/file/902460/3_MARPOL.pdf', 'https://ri.furg.br/images/marpol_73_78-2002-completo.pdf']),
+            ('portuario', 'Convenio-BWM-2004.pdf', ['AGUA DE LASTRE'], [], ['https://www.boe.es/boe/dias/2016/11/22/pdfs/BOE-A-2016-10960.pdf', 'https://www.directemar.cl/directemar/site/docs/20170130/20170130105114/bw_convention___spanish_text.pdf']),
+            ('portuario', 'Ley-217-General-del-Medio-Ambiente.pdf', ['217', 'MEDIO AMBIENTE'], ['REGLAMENTO'], ['https://leybook.com/doc/30982/pdf', 'https://faolex.fao.org/docs/pdf/nic138661.pdf', 'https://faolex.fao.org/docs/pdf/nic177024.pdf']),
+            ('pecuario', 'Ley-291-Salud-Animal-y-Sanidad-Vegetal.pdf', ['291', 'SALUD ANIMAL'], [], ['https://www.ipsa.gob.ni/Portals/0/1%20Inocuidad%20Alimentaria/Normativas%20Generales/ACTUALIZACION%20051217/Seccion%20Carne/Ley_291.pdf', L % 5395, 'https://leybook.com/doc/601/pdf', 'https://faolex.fao.org/docs/pdf/nic14368.pdf']),
+          ]
+          REFORMA = ['LEY DE REFORMA', 'LEY DE REFORMAS', 'REFORMAS Y ADICIONES', 'REFORMA A LA LEY', 'REFORMA AL ', 'DECRETO DE REFORMA']
+
+          def texto(f):
+            try:
+              t = subprocess.run(['pdftotext', '-l', '3', f, '-'], capture_output=True, timeout=60).stdout.decode('utf-8', 'ignore')
+            except Exception:
+              return ''
+            t = unicodedata.normalize('NFKD', t).encode('ascii', 'ignore').decode().upper()
+            return re.sub(r'\s+', ' ', t)
+
+          def bajar(url, destino):
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, timeout=120) as r, open(destino, 'wb') as f:
+              datos = r.read(46 * 1024 * 1024)
+              f.write(datos)
+            return datos[:4] == b'%PDF' and len(datos) < 45 * 1024 * 1024
+
+          resumen = ['| Documento | Resultado |', '| --- | --- |']
+          for area, nombre, debe, descarta, enlaces in DOCS:
+            destino = 'documentos/%s/%s' % (area, nombre)
+            if os.path.exists(destino):
+              resumen.append('| %s | Ya estaba |' % nombre); continue
+            elegido = None
+            for i, url in enumerate(enlaces):
+              tmp = '/tmp/cand%d.pdf' % i
+              try:
+                if not bajar(url, tmp): continue
+              except Exception:
+                continue
+              t = texto(tmp)
+              cabeza, inicio = t[:220], t[:3500]
+              if not all(p in inicio for p in debe): continue
+              if any(p in cabeza for p in descarta): continue
+              consolidado = any(p in cabeza for p in ('TEXTO CONSOLIDADO', 'REFORMAS INCORPORADAS', 'TEXTO INTEGRO'))
+              # Una ley de reforma no sirve; un texto consolidado sí, aunque nombre sus reformas.
+              if not consolidado and any(p in cabeza for p in REFORMA): continue
+              if elegido is None or (consolidado and not elegido[1]):
+                elegido = (tmp, consolidado, url)
+              if consolidado: break
+            if elegido:
+              os.makedirs(os.path.dirname(destino), exist_ok=True)
+              os.replace(elegido[0], destino)
+              resumen.append('| %s | Descargado%s |' % (nombre, ' (texto consolidado)' if elegido[1] else ''))
+              print('Descargado:', destino, '<-', elegido[2])
+            else:
+              resumen.append('| %s | No se encontró una copia confiable |' % nombre)
+              print('No encontrado:', nombre)
+
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as s:
+            s.write('## Resultado de la descarga\n\n' + '\n'.join(resumen) + '\n')
       - name: Guardar en el repositorio
         run: |
           git config user.name "Biblioteca Virtual"
