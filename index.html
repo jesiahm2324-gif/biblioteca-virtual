@@ -76,6 +76,17 @@ h2.seccion{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:va
 .doc .btn-icono:active{background:var(--celeste)}
 .doc .btn-icono:disabled{opacity:.5}
 
+.grupos{display:flex;flex-direction:column;gap:8px}
+.grupo{background:var(--tarjeta);border:1px solid var(--borde);border-radius:16px;box-shadow:var(--sombra);overflow:hidden}
+.grupo-cab{width:100%;display:flex;align-items:center;gap:12px;min-height:56px;padding:0 14px 0 16px;background:none;border:0;text-align:left}
+.grupo-cab:active{background:var(--celeste)}
+.grupo-nombre{flex:1;font-size:17px;font-weight:700}
+.grupo-cuenta{font-size:14px;color:var(--tenue);font-weight:600}
+.grupo-cab svg{color:var(--tenue);transition:transform .15s}
+.grupo.abierto .grupo-cab svg{transform:rotate(90deg)}
+.grupo.abierto .grupo-cab{border-bottom:1px solid var(--borde)}
+.grupo-cuerpo{padding:8px 8px 12px;background:var(--fondo)}
+.grupo-cuerpo .fila-accion{margin:4px 0 8px}
 .doc.pendiente{background:transparent;box-shadow:none;border-style:dashed}
 .pdf-ico.web{background:transparent;border:1.5px dashed var(--borde);color:var(--tenue);font-size:10px}
 .doc .btn-icono.subir{color:var(--azul)}
@@ -210,8 +221,8 @@ if (location.hostname.endsWith('.github.io')) {
   const seg = location.pathname.split('/').filter(Boolean)[0];
   if (seg && !seg.includes('.')) REPO = seg;
 }
-const AREAS = { codigos: 'Códigos', laboral: 'Laboral', portuario: 'Portuario', pecuario: 'Pecuario' };
-const ORDEN = ['codigos', 'laboral', 'portuario', 'pecuario'];
+const AREAS = { codigos: 'Códigos', laboral: 'Laboral', portuario: 'Portuario', pecuario: 'Pecuario', espiritual: 'Espiritual', financiera: 'Financiera' };
+const ORDEN = ['codigos', 'laboral', 'portuario', 'pecuario', 'espiritual', 'financiera'];
 const DOCS_CACHE = 'bv-docs';
 
 /* ================= Lista de documentos de la biblioteca =================
@@ -344,6 +355,7 @@ const E = {
   pestana: 'todos',
   q: '',
   favs: new Set(leer('bv-favs', [])),
+  abiertas: new Set(leer('bv-abiertas', [])),  // áreas desplegadas en la pantalla principal
   bajados: leer('bv-bajados', {}),   // id -> sha descargado
   ultimo: leer('bv-ultimo', {}),     // id -> {p, t}
   textos: new Map(),                 // id -> {pages, plegadas}
@@ -366,6 +378,8 @@ function areaDeRuta(path) {
   if (carpeta.startsWith('laboral')) return 'laboral';
   if (carpeta.startsWith('portuari') || carpeta.startsWith('puerto')) return 'portuario';
   if (carpeta.startsWith('pecuari') || carpeta.startsWith('ganad')) return 'pecuario';
+  if (carpeta.startsWith('espiritu')) return 'espiritual';
+  if (carpeta.startsWith('financ') || carpeta.startsWith('finanza')) return 'financiera';
   return carpeta;
 }
 let RAMA = leer('bv-rama', 'main');
@@ -505,28 +519,51 @@ function pintar() {
   if (E.estadoRepo === 'error' && !E.docs.length) m.append(el('div', { class: 'aviso-error' }, el('p', null, 'No se pudo cargar la lista: ' + E.errorRepo), el('button', { class: 'btn sec', onclick: () => cargarRepo(true) }, 'Reintentar')));
 
   const pend = pendientes();
-  const seccionArea = (a, conTitulo) => {
+  const cuenta = (a) => { const l = E.docs.filter((d) => d.area === a).length; return { listos: l, total: l + pend.filter((c) => c.area === a).length }; };
+  const seccionArea = (a, dest) => {
     const listos = ordenar(E.docs.filter((d) => d.area === a));
     const faltan = pend.filter((c) => c.area === a);
-    const total = listos.length + faltan.length;
-    if (!total) return;
-    if (conTitulo) m.append(el('h2', { class: 'seccion' }, etiquetaArea(a) + ' · ' + listos.length + ' de ' + total + ' en la app'));
-    if (listos.length) m.append(el('div', { class: 'lista' }, listos.map(tarjeta)));
+    if (listos.length) dest.append(el('div', { class: 'lista' }, listos.map(tarjeta)));
     if (faltan.length) {
-      if (!conTitulo || listos.length) m.append(el('h3', { class: 'subseccion' }, 'Por agregar · se abren en internet'));
-      m.append(el('div', { class: 'lista' }, faltan.map(tarjetaPendiente)));
+      dest.append(el('h3', { class: 'subseccion' }, 'Por agregar · se abren en internet'));
+      dest.append(el('div', { class: 'lista' }, faltan.map(tarjetaPendiente)));
     }
+    return listos.length + faltan.length;
   };
+  const botonSubir = (a) => el('div', { class: 'fila-accion' }, el('button', { class: 'btn sec', onclick: () => elegirParaSubir(a) }, svg(ICO.subir), 'Subir PDF a ' + etiquetaArea(a)));
 
   if (p === 'todos') {
-    const recientes = Object.entries(E.ultimo).sort((a, b) => b[1].t - a[1].t).map(([id]) => porId(id)).filter(Boolean).slice(0, 3);
+    // Pantalla principal compacta: cada área es una fila que se abre y se cierra.
+    const recientes = Object.entries(E.ultimo).sort((a, b) => b[1].t - a[1].t).map(([id]) => porId(id)).filter(Boolean).slice(0, 2);
     if (recientes.length) m.append(el('h2', { class: 'seccion' }, 'Seguir leyendo'), el('div', { class: 'lista' }, recientes.map(tarjeta)));
-    for (const a of areasPresentes()) seccionArea(a, true);
+    m.append(el('h2', { class: 'seccion' }, 'Áreas'));
+    const grupos = el('div', { class: 'grupos' });
+    m.append(grupos);
+    for (const a of areasPresentes()) {
+      const { listos, total } = cuenta(a);
+      const abierto = E.abiertas.has(a);
+      const cuerpo = el('div', { class: 'grupo-cuerpo', id: 'grupo-' + a });
+      const cab = el('button', { class: 'grupo-cab', 'aria-expanded': String(abierto), 'aria-controls': 'grupo-' + a, onclick: () => {
+        E.abiertas.has(a) ? E.abiertas.delete(a) : E.abiertas.add(a);
+        guardar('bv-abiertas', [...E.abiertas]); pintar();
+      } },
+        el('span', { class: 'grupo-nombre' }, etiquetaArea(a)),
+        el('span', { class: 'grupo-cuenta' }, total ? listos + ' de ' + total : 'Vacía'),
+        svg('M9 6l6 6-6 6'));
+      const g = el('section', { class: 'grupo' + (abierto ? ' abierto' : '') }, cab);
+      if (abierto) {
+        if (esAdmin() && ORDEN.includes(a)) cuerpo.append(botonSubir(a));
+        if (!seccionArea(a, cuerpo)) cuerpo.append(el('p', { class: 'nota' }, esAdmin() ? 'Aún no hay documentos.' : 'Pronto se agregarán documentos en esta sección.'));
+        g.append(cuerpo);
+      }
+      grupos.append(g);
+    }
     return;
   }
-  const antes = m.childNodes.length;
-  seccionArea(p, false);
-  if (m.childNodes.length === antes) m.append(vacio('Sin documentos en ' + etiquetaArea(p)));
+  if (esAdmin() && ORDEN.includes(p)) m.append(botonSubir(p));
+  const caja = el('div');
+  m.append(caja);
+  if (!seccionArea(p, caja)) m.append(vacio('Sin documentos en ' + etiquetaArea(p), esAdmin() ? '' : 'Pronto se agregarán documentos en esta sección.'));
 }
 
 /* ================= Documento por agregar ================= */
