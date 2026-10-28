@@ -1,0 +1,969 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Biblioteca Virtual</title>
+<meta name="description" content="Leyes, códigos, normas y manuales para consultar en el teléfono, también sin internet.">
+<meta name="theme-color" content="#1D4ED8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Biblioteca">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{
+  --azul:#1D4ED8; --azul-osc:#1E3A8A; --celeste:#DBEAFE; --amarillo:#FACC15;
+  --fondo:#F8FAFC; --tarjeta:#FFFFFF; --borde:#E2E8F0; --texto:#0F172A; --suave:#475569; --tenue:#64748B;
+  --peligro:#B91C1C; --ok:#047857; --sombra:0 1px 2px rgba(15,23,42,.06),0 4px 12px rgba(15,23,42,.05);
+  --lector:#E2E8F0;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --azul:#60A5FA; --azul-osc:#BFDBFE; --celeste:#1E293B;
+    --fondo:#0B1120; --tarjeta:#111827; --borde:#1F2937; --texto:#F1F5F9; --suave:#CBD5E1; --tenue:#94A3B8;
+    --peligro:#F87171; --ok:#34D399; --sombra:none; --lector:#020617;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--fondo);color:var(--texto);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-text-size-adjust:100%}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+.oculto{display:none !important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* Encabezado */
+header{position:sticky;top:0;z-index:5;background:#1D4ED8;color:#fff;padding:calc(env(safe-area-inset-top) + 12px) 16px 12px}
+.marca{display:flex;align-items:center;gap:12px;max-width:720px;margin:0 auto}
+.marca img{width:36px;height:36px;border-radius:9px;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
+.marca h1{font-size:20px;margin:0;font-weight:700;flex:1;letter-spacing:-.2px}
+.btn-icono{width:44px;height:44px;border:0;border-radius:12px;background:transparent;display:inline-flex;align-items:center;justify-content:center}
+header .btn-icono{color:#fff}
+header .btn-icono:active{background:rgba(255,255,255,.15)}
+.buscador{max-width:720px;margin:12px auto 0;position:relative}
+.buscador input{width:100%;height:48px;border:0;border-radius:14px;padding:0 44px 0 44px;background:#fff;color:#0F172A;font-size:17px;outline:none}
+.buscador input:focus{box-shadow:0 0 0 3px var(--amarillo)}
+.buscador svg{position:absolute;left:14px;top:14px;color:#64748B}
+.buscador .limpiar{position:absolute;right:2px;top:2px;color:#64748B}
+
+/* Pestañas */
+.chips{display:flex;gap:8px;overflow-x:auto;padding:12px 16px;max-width:752px;margin:0 auto;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;height:40px;padding:0 16px;border-radius:999px;border:1px solid var(--borde);background:var(--tarjeta);color:var(--suave);font-size:15px;font-weight:600;white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--azul);border-color:var(--azul);color:#fff}
+@media (prefers-color-scheme: dark){.chip[aria-pressed="true"]{color:#0B1120}}
+
+main{max-width:720px;margin:0 auto;padding:0 16px calc(32px + env(safe-area-inset-bottom))}
+h2.seccion{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--tenue);margin:20px 4px 8px;font-weight:700}
+.lista{display:flex;flex-direction:column;gap:8px}
+
+/* Tarjeta de documento */
+.doc{display:flex;align-items:center;gap:4px;background:var(--tarjeta);border:1px solid var(--borde);border-radius:16px;box-shadow:var(--sombra);padding:4px 4px 4px 0}
+.doc .abrir{flex:1;min-width:0;display:flex;align-items:center;gap:12px;text-align:left;background:none;border:0;padding:10px 4px 10px 12px;border-radius:12px}
+.doc .abrir:active{background:var(--celeste)}
+.pdf-ico{flex:none;width:40px;height:48px;border-radius:8px;background:var(--celeste);color:var(--azul);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;letter-spacing:.04em}
+.doc .txt{min-width:0}
+.doc .titulo{font-weight:600;font-size:16px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.doc .meta{font-size:13px;color:var(--tenue);margin-top:2px}
+.doc .meta .ok{color:var(--ok);font-weight:600}
+.doc .meta .nuevo{color:var(--azul);font-weight:600}
+.doc .btn-icono{color:var(--tenue)}
+.doc .btn-icono[aria-pressed="true"]{color:#CA8A04}
+.doc .btn-icono.bajado{color:var(--ok)}
+.doc .btn-icono:active{background:var(--celeste)}
+.doc .btn-icono:disabled{opacity:.5}
+
+.doc.pendiente{background:transparent;box-shadow:none;border-style:dashed}
+.pdf-ico.web{background:transparent;border:1.5px dashed var(--borde);color:var(--tenue);font-size:10px}
+.doc .btn-icono.subir{color:var(--azul)}
+h3.subseccion{font-size:13px;color:var(--tenue);font-weight:600;margin:14px 4px 8px}
+.panel{background:var(--tarjeta);border:1px solid var(--borde);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.panel p{margin:0;color:var(--suave);font-size:15px}
+.panel .url{font-family:ui-monospace,Menlo,monospace;font-size:14px;color:var(--texto);word-break:break-all;background:var(--fondo);border:1px solid var(--borde);border-radius:10px;padding:8px 10px;align-self:stretch}
+.panel input{align-self:stretch;height:48px;border:1px solid var(--borde);border-radius:12px;padding:0 12px;background:var(--fondo);font-size:16px}
+.panel .fila{display:flex;gap:8px;flex-wrap:wrap}
+.panel .ok{color:var(--ok)}
+.etiqueta{font-size:14px;font-weight:600;color:var(--texto)}
+.aviso-error{display:flex;flex-direction:column;gap:8px;align-items:flex-start;background:var(--tarjeta);border:1px solid var(--borde);border-radius:14px;padding:12px 14px;margin:8px 0}
+.aviso-error p{margin:0;color:var(--peligro);font-size:14px}
+.vacio{text-align:center;color:var(--suave);padding:40px 16px}
+.vacio strong{display:block;color:var(--texto);font-size:18px;margin-bottom:6px}
+.vacio code{background:var(--celeste);padding:2px 6px;border-radius:6px;font-size:14px}
+.btn{height:48px;padding:0 20px;border-radius:14px;border:0;background:var(--azul);color:#fff;font-weight:700;font-size:16px;display:inline-flex;align-items:center;gap:8px}
+@media (prefers-color-scheme: dark){.btn{color:#0B1120}}
+.btn.sec{background:var(--tarjeta);color:var(--azul);border:1px solid var(--borde)}
+.fila-accion{display:flex;justify-content:center;margin:12px 0 4px}
+
+/* Resultados dentro del texto */
+.hit{display:block;width:100%;text-align:left;background:var(--tarjeta);border:1px solid var(--borde);border-radius:14px;padding:12px 14px}
+.hit:active{background:var(--celeste)}
+.hit .de{font-size:13px;color:var(--tenue);font-weight:600}
+.hit .frag{font-size:15px;margin-top:4px;color:var(--suave)}
+.hit mark{background:#FEF08A;color:#0F172A;border-radius:3px;padding:0 1px}
+.nota{font-size:13px;color:var(--tenue);margin:8px 4px}
+
+.aviso{max-width:720px;margin:12px auto 0;padding:0 16px}
+.aviso div{display:flex;gap:12px;align-items:center;background:var(--celeste);color:var(--texto);border-radius:14px;padding:10px 8px 10px 14px;font-size:14px}
+.aviso p{margin:0;flex:1}
+
+/* Lector */
+#lector{position:fixed;inset:0;z-index:20;background:var(--lector);display:flex;flex-direction:column}
+.barra{display:flex;align-items:center;gap:4px;background:var(--tarjeta);border-bottom:1px solid var(--borde);padding:calc(env(safe-area-inset-top) + 4px) 4px 4px}
+.barra .btn-icono{color:var(--texto)}
+.barra .nombre{flex:1;min-width:0;font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.buscar-doc{display:flex;align-items:center;gap:4px;background:var(--tarjeta);border-bottom:1px solid var(--borde);padding:6px 4px 6px 12px}
+.buscar-doc input{flex:1;min-width:0;height:40px;border:1px solid var(--borde);border-radius:10px;padding:0 12px;background:var(--fondo)}
+.buscar-doc .cuenta{font-size:13px;color:var(--tenue);min-width:64px;text-align:center}
+#paginas{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;position:relative;padding:12px 8px}
+.pagina{margin:0 auto 12px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.2);position:relative;max-width:none}
+.pagina canvas{display:block;width:100%;height:auto;position:relative;z-index:1;background:#fff}
+input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none;display:none}
+.pagina .num{position:absolute;inset:auto 0 50% 0;text-align:center;color:#94A3B8;font-size:14px}
+.pie{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--tarjeta);border-top:1px solid var(--borde);padding:4px 8px calc(env(safe-area-inset-bottom) + 4px)}
+.pie .btn-icono{color:var(--texto)}
+.pie .pag{min-width:110px;height:40px;border:1px solid var(--borde);border-radius:10px;background:var(--fondo);font-size:15px;font-weight:600}
+.cargando{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--suave);font-size:15px}
+
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#0F172A;color:#fff;padding:12px 16px;border-radius:12px;font-size:15px;z-index:40;max-width:calc(100% - 32px);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="marca">
+    <img src="icon-192.png" alt="">
+    <h1>Biblioteca Virtual</h1>
+    <button class="btn-icono oculto" id="btnInstalar" aria-label="Instalar la app">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+    </button>
+    <button class="btn-icono" id="btnAjustes" aria-label="Compartir y ajustes">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6"/></svg>
+    </button>
+    <button class="btn-icono" id="btnRecargar" aria-label="Actualizar la lista">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36L21 8M21 3v5h-5"/></svg>
+    </button>
+  </div>
+  <form class="buscador" role="search" onsubmit="return false">
+    <label for="q" class="sr">Buscar en la biblioteca</label>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+    <input id="q" type="search" placeholder="Buscar ley, artículo o palabra" autocomplete="off" enterkeyhint="search">
+    <button type="button" class="btn-icono limpiar oculto" id="btnLimpiar" aria-label="Borrar búsqueda">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </form>
+</header>
+
+<div class="aviso oculto" id="avisoIos"><div>
+  <p>Para instalarla: toque <strong>Compartir</strong> y luego <strong>Agregar a inicio</strong>.</p>
+  <button class="btn-icono" id="cerrarAviso" aria-label="Cerrar aviso"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+</div></div>
+
+<nav class="chips" id="chips" aria-label="Áreas"></nav>
+<main id="contenido" aria-live="polite"></main>
+
+<section id="lector" class="oculto" aria-label="Lector de documento">
+  <div class="barra">
+    <button class="btn-icono" id="lecCerrar" aria-label="Volver a la biblioteca">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <div class="nombre" id="lecTitulo"></div>
+    <button class="btn-icono" id="lecCompartir" aria-label="Compartir este documento">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6"/></svg>
+    </button>
+    <button class="btn-icono" id="lecFav" aria-label="Marcar como favorito" aria-pressed="false">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z"/></svg>
+    </button>
+    <button class="btn-icono" id="lecBuscar" aria-label="Buscar en este documento">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+    </button>
+  </div>
+  <form class="buscar-doc oculto" id="lecBarraBuscar" onsubmit="return false">
+    <label for="lecQ" class="sr">Buscar en este documento</label>
+    <input id="lecQ" type="search" placeholder="Buscar en este documento" enterkeyhint="search" autocomplete="off">
+    <span class="cuenta" id="lecCuenta"></span>
+    <button type="button" class="btn-icono" id="lecAnt" aria-label="Resultado anterior"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 15l-6-6-6 6"/></svg></button>
+    <button type="button" class="btn-icono" id="lecSig" aria-label="Resultado siguiente"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+  </form>
+  <div id="paginas"><div class="cargando" id="lecCargando">Abriendo…</div></div>
+  <div class="pie">
+    <button class="btn-icono" id="zoomMenos" aria-label="Reducir"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"/></svg></button>
+    <button class="pag" id="lecPag" aria-label="Ir a una página">– / –</button>
+    <button class="btn-icono" id="zoomMas" aria-label="Ampliar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></button>
+  </div>
+</section>
+
+<input type="file" id="archivo" accept="application/pdf,.pdf" multiple class="oculto">
+<input type="file" id="archivoSubir" accept="application/pdf,.pdf" class="oculto">
+<div id="toast" class="oculto" role="status"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+'use strict';
+/* ================= Configuración ================= */
+// Se detecta solo desde la dirección de GitHub Pages (usuario.github.io/repositorio).
+let OWNER = 'jesiahm2324-gif', REPO = 'biblioteca-virtual-';
+if (location.hostname.endsWith('.github.io')) {
+  OWNER = location.hostname.split('.')[0];
+  const seg = location.pathname.split('/').filter(Boolean)[0];
+  if (seg && !seg.includes('.')) REPO = seg;
+}
+const AREAS = { codigos: 'Códigos', laboral: 'Laboral', portuario: 'Portuario', pecuario: 'Pecuario', espiritual: 'Espiritual', financiera: 'Financiera' };
+const ORDEN = ['codigos', 'laboral', 'portuario', 'pecuario', 'espiritual', 'financiera'];
+const DOCS_CACHE = 'bv-docs';
+
+/* ================= Lista de documentos de la biblioteca =================
+   Cada entrada aparece en la app aunque todavía no se haya subido el PDF.
+   Cuando se sube (con el botón de la app o desde GitHub), pasa a leerse dentro de la app.
+   clave: palabras que deben estar en el nombre del PDF subido para reconocerlo.
+   enlace: fuente verificada. Sin enlace, la app abre una búsqueda en internet. */
+const CATALOGO = [
+  { area: 'codigos', archivo: 'Codigo-Penal-Ley-641.pdf', titulo: 'Código Penal (Ley 641)', clave: ['641'] },
+  { area: 'codigos', archivo: 'Codigo-Procesal-Penal-Ley-406.pdf', titulo: 'Código Procesal Penal (Ley 406)', clave: ['406'] },
+  { area: 'codigos', archivo: 'Codigo-Civil.pdf', titulo: 'Código Civil', clave: ['civil'], no: ['procesal'] },
+  { area: 'codigos', archivo: 'Codigo-Procesal-Civil-Ley-902.pdf', titulo: 'Código Procesal Civil (Ley 902)', clave: ['902'] },
+  { area: 'codigos', archivo: 'Codigo-Procesal-del-Trabajo-Ley-815.pdf', titulo: 'Código Procesal del Trabajo y de la Seguridad Social (Ley 815)', clave: ['815'], enlace: 'https://nicaragua.justia.com/nacionales/codigos/codigo-procesal-del-trabajo-y-de-la-seguridad-social-de-nicaragua-nov-29-2012/gdoc' },
+  { area: 'codigos', archivo: 'Codigo-de-Familia-Ley-870.pdf', titulo: 'Código de Familia (Ley 870)', clave: ['870'], enlace: 'https://nicaragua.justia.com/nacionales/leyes/codigo-de-familia-1-oct-8-2014/gdoc' },
+  { area: 'codigos', archivo: 'Codigo-de-Comercio.pdf', titulo: 'Código de Comercio', clave: ['comercio'] },
+  { area: 'codigos', archivo: 'Codigo-de-la-Ninez-y-la-Adolescencia-Ley-287.pdf', titulo: 'Código de la Niñez y la Adolescencia (Ley 287)', clave: ['287'] },
+
+  { area: 'laboral', archivo: 'Codigo-del-Trabajo-Ley-185.pdf', titulo: 'Código del Trabajo (Ley 185)', clave: ['185'] },
+  { area: 'laboral', archivo: 'Ley-618-Higiene-y-Seguridad-del-Trabajo.pdf', titulo: 'Ley 618, Higiene y Seguridad del Trabajo', clave: ['618'] },
+  { area: 'laboral', archivo: 'Ley-476-Servicio-Civil-y-Carrera-Administrativa.pdf', titulo: 'Ley 476, Servicio Civil y Carrera Administrativa', clave: ['476'], no: ['reglamento'], enlace: 'https://www.leybook.com/doc/32870/pdf' },
+  { area: 'laboral', archivo: 'Reglamento-Ley-476.pdf', titulo: 'Reglamento de la Ley 476', clave: ['476', 'reglamento'], enlace: 'https://www.leybook.com/doc/32188/pdf' },
+  { area: 'laboral', archivo: 'Ley-438-Probidad-de-los-Servidores-Publicos.pdf', titulo: 'Ley 438, Probidad de los Servidores Públicos', clave: ['438'] },
+  { area: 'laboral', archivo: 'Ley-822-Concertacion-Tributaria.pdf', titulo: 'Ley 822, Concertación Tributaria (texto vigente)', clave: ['822'], no: ['reglamento'] },
+  { area: 'laboral', archivo: 'Reglamento-Ley-822.pdf', titulo: 'Reglamento de la Ley 822', clave: ['822', 'reglamento'], enlace: 'https://www.leybook.com/doc/16532/pdf' },
+  { area: 'laboral', archivo: 'Ley-539-Seguridad-Social.pdf', titulo: 'Ley 539, Seguridad Social', clave: ['539'] },
+  { area: 'laboral', archivo: 'Reglamento-General-Ley-Seguridad-Social.pdf', titulo: 'Reglamento General de la Ley de Seguridad Social', clave: ['reglamento', 'seguridad', 'social'], enlace: 'https://nicaragua.justia.com/nacionales/decretos-ejecutivos/reglamento-general-de-la-ley-de-seguridad-social-mar-1-1982/gdoc' },
+
+  { area: 'portuario', archivo: 'Ley-431-Transito.pdf', titulo: 'Ley 431, Circulación Vehicular e Infracciones de Tránsito', clave: ['431'], enlace: 'https://www.leybook.com/doc/28081/pdf' },
+  { area: 'portuario', archivo: 'Ley-838-General-de-Puertos.pdf', titulo: 'Ley 838, General de Puertos de Nicaragua', clave: ['838'], no: ['reglamento'], enlace: 'https://www.leybook.com/doc/25962/pdf' },
+  { area: 'portuario', archivo: 'Reglamento-Ley-838.pdf', titulo: 'Reglamento de la Ley 838', clave: ['838', 'reglamento'], enlace: 'https://www.leybook.com/doc/26169/pdf' },
+  { area: 'portuario', archivo: 'Ley-399-Transporte-Acuatico.pdf', titulo: 'Ley 399, Transporte Acuático', clave: ['399'] },
+  { area: 'portuario', archivo: 'Reglamento-Transporte-Acuatico-Decreto-4877.pdf', titulo: 'Reglamento de la Ley de Transporte Acuático (Decreto 4877)', clave: ['4877'] },
+  { area: 'portuario', archivo: 'Ley-Servicio-de-Practicaje.pdf', titulo: 'Ley Reguladora del Servicio de Practicaje', clave: ['practicaje'], enlace: 'https://leybook.com/doc/4400/pdf' },
+  { area: 'portuario', archivo: 'Convenio-SOLAS-1974.pdf', titulo: 'Convenio SOLAS (1974)', clave: ['solas'], buscar: 'Convenio SOLAS 1974 texto en español pdf' },
+  { area: 'portuario', archivo: 'Convenio-MARPOL-73-78.pdf', titulo: 'Convenio MARPOL (1973/1978)', clave: ['marpol'], buscar: 'Convenio MARPOL 73/78 texto en español pdf' },
+  { area: 'portuario', archivo: 'Convenio-BWM-2004.pdf', titulo: 'Convenio BWM, agua de lastre (2004)', clave: ['bwm'], buscar: 'Convenio internacional control gestión agua de lastre BWM 2004 texto español pdf' },
+  { area: 'portuario', archivo: 'CONVEMAR-UNCLOS-1982.pdf', titulo: 'CONVEMAR, Derecho del Mar (1982)', clave: ['convemar'], enlace: 'https://www.un.org/depts/los/convention_agreements/texts/unclos/convemar_es.pdf' },
+  { area: 'portuario', archivo: 'Ley-217-General-del-Medio-Ambiente.pdf', titulo: 'Ley 217, General del Medio Ambiente', clave: ['217'] },
+
+  { area: 'pecuario', archivo: 'Ley-291-Salud-Animal-y-Sanidad-Vegetal.pdf', titulo: 'Ley 291, Salud Animal y Sanidad Vegetal', clave: ['291'] },
+  { area: 'pecuario', archivo: 'Manual-Practico-PRV.pdf', titulo: 'Manual práctico de PRV (Pastoreo Racional Voisin)', clave: ['prv'], sinBuscar: true },
+  { area: 'pecuario', archivo: 'Manual-Ganaderia-Explotacion-Lechera.pdf', titulo: 'Manual de ganadería para explotación lechera', clave: ['lechera'], sinBuscar: true }
+];
+const enlaceDe = (c) => c.enlace || (c.sinBuscar ? null : 'https://www.google.com/search?q=' + encodeURIComponent(c.buscar || (c.titulo.replace(/[(),]/g, ' ') + ' Nicaragua texto consolidado pdf')));
+
+function pdfLib() {
+  const L = window.pdfjsLib;
+  if (L && !pdfLib.listo) { L.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; pdfLib.listo = true; }
+  return L;
+}
+
+/* ================= Utilidades ================= */
+const $ = (id) => document.getElementById(id);
+function el(tag, attrs, ...hijos) {
+  const n = document.createElement(tag);
+  for (const k in (attrs || {})) {
+    const v = attrs[k];
+    if (v == null || v === false) continue;
+    if (k === 'class') n.className = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k, v === true ? '' : v);
+  }
+  for (const h of hijos.flat()) if (h != null) n.append(h.nodeType ? h : document.createTextNode(String(h)));
+  return n;
+}
+function svg(d, extra) {
+  const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  s.setAttribute('width', 22); s.setAttribute('height', 22); s.setAttribute('viewBox', '0 0 24 24');
+  s.setAttribute('fill', extra && extra.fill ? 'currentColor' : 'none'); s.setAttribute('stroke', 'currentColor');
+  s.setAttribute('stroke-width', '2'); s.setAttribute('stroke-linecap', 'round'); s.setAttribute('stroke-linejoin', 'round');
+  s.setAttribute('aria-hidden', 'true');
+  const p = document.createElementNS('http://www.w3.org/2000/svg', 'path'); p.setAttribute('d', d); s.append(p); return s;
+}
+const ICO = {
+  estrella: 'M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z',
+  bajar: 'M12 4v11M7 10l5 5 5-5M5 20h14',
+  bajado: 'M5 13l4 4L19 7',
+  borrar: 'M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3',
+  externo: 'M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5',
+  lupa: 'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-4-4',
+  subir: 'M12 20V9M7 14l5-5 5 5M5 4h14',
+  compartir: 'M12 3v12M7 8l5-5 5 5M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6'
+};
+const FOLD = { 'á':'a','à':'a','ä':'a','â':'a','é':'e','è':'e','ë':'e','ê':'e','í':'i','ì':'i','ï':'i','î':'i','ó':'o','ò':'o','ö':'o','ô':'o','ú':'u','ù':'u','ü':'u','û':'u','ñ':'n' };
+// Misma longitud que el texto original, para poder recortar fragmentos.
+const plegar = (s) => (s || '').toLowerCase().replace(/[áàäâéèëêíìïîóòöôúùüûñ]/g, (c) => FOLD[c]);
+const titulo = (nombre) => {
+  let t = nombre.replace(/\.pdf$/i, '').replace(/_+/g, ' ');
+  if (!/\s/.test(t)) t = t.replace(/-+/g, ' '); // Codigo-del-Trabajo -> Codigo del Trabajo
+  return t.replace(/\s+/g, ' ').trim();
+};
+const cerrarPdf = (pdf) => { try { pdf.destroy ? pdf.destroy() : pdf.loadingTask.destroy(); } catch (e) {} };
+const etiquetaArea = (a) => AREAS[a] || (a === 'otros' ? 'Otros' : a === 'mis' ? 'Mis documentos' : a.charAt(0).toUpperCase() + a.slice(1).replace(/[-_]+/g, ' '));
+const mb = (b) => b ? (b / 1048576 < 0.1 ? '<0.1' : (b / 1048576).toFixed(1)) + ' MB' : '';
+const leer = (k, def) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch (e) { return def; } };
+const guardar = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+let toastT;
+function aviso(msg, ms) {
+  const t = $('toast'); t.textContent = msg; t.classList.remove('oculto');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.add('oculto'), ms || 3200);
+}
+const absoluta = (u) => new URL(u, location.href).href;
+
+/* ================= Base de datos local (IndexedDB) ================= */
+let dbP;
+function db() {
+  if (!dbP) dbP = new Promise((ok, mal) => {
+    const r = indexedDB.open('biblioteca-virtual', 1);
+    r.onupgradeneeded = () => { r.result.createObjectStore('archivos', { keyPath: 'id' }); r.result.createObjectStore('texto', { keyPath: 'id' }); };
+    r.onsuccess = () => ok(r.result); r.onerror = () => mal(r.error);
+  });
+  return dbP;
+}
+async function idb(store, modo, fn) {
+  const d = await db();
+  return new Promise((ok, mal) => {
+    const tx = d.transaction(store, modo); const s = tx.objectStore(store); const r = fn(s);
+    tx.oncomplete = () => ok(r && r.result); tx.onerror = () => mal(tx.error);
+  });
+}
+const idbGet = (s, k) => idb(s, 'readonly', (st) => st.get(k));
+const idbAll = (s) => idb(s, 'readonly', (st) => st.getAll());
+const idbPut = (s, v) => idb(s, 'readwrite', (st) => st.put(v));
+const idbDel = (s, k) => idb(s, 'readwrite', (st) => st.delete(k));
+
+/* ================= Estado ================= */
+const E = {
+  docs: [],            // del repositorio
+  locales: [],         // Mis documentos
+  pestana: 'todos',
+  q: '',
+  favs: new Set(leer('bv-favs', [])),
+  bajados: leer('bv-bajados', {}),   // id -> sha descargado
+  ultimo: leer('bv-ultimo', {}),     // id -> {p, t}
+  textos: new Map(),                 // id -> {pages, plegadas}
+  ocupado: {},                       // id -> texto de progreso
+  estadoRepo: 'cargando',            // cargando | ok | vacio | error
+  errorRepo: ''
+};
+const todos = () => E.docs.concat(E.locales);
+const porId = (id) => todos().find((d) => d.id === id);
+
+/* ================= Lista del repositorio ================= */
+// El área es la carpeta donde está el PDF, esté donde esté en el repositorio:
+// documentos/portuario/x.pdf y documentos/documentos/Portuario/x.pdf van a "portuario".
+function areaDeRuta(path) {
+  const partes = path.split('/');
+  if (partes.length < 2) return 'otros';
+  const carpeta = plegar(partes[partes.length - 2]).replace(/[^a-z0-9]+/g, '');
+  if (!carpeta || carpeta === 'documentos' || carpeta === 'documento') return 'otros';
+  if (carpeta.startsWith('codigo')) return 'codigos';
+  if (carpeta.startsWith('laboral')) return 'laboral';
+  if (carpeta.startsWith('portuari') || carpeta.startsWith('puerto')) return 'portuario';
+  if (carpeta.startsWith('pecuari') || carpeta.startsWith('ganad')) return 'pecuario';
+  if (carpeta.startsWith('espiritu')) return 'espiritual';
+  if (carpeta.startsWith('financ') || carpeta.startsWith('finanza')) return 'financiera';
+  return carpeta;
+}
+let RAMA = leer('bv-rama', 'main');
+// Los PDF se leen directo de GitHub: un archivo recién subido se puede abrir al instante.
+const urlArchivo = (path) => `https://raw.githubusercontent.com/${OWNER}/${REPO}/${RAMA}/` + path.split('/').map(encodeURIComponent).join('/');
+function docDeRepo(path, size, sha) {
+  const nombre = path.split('/').pop();
+  const area = areaDeRuta(path);
+  const c = CATALOGO.find((x) => x.area === area && x.archivo.toLowerCase() === nombre.toLowerCase());
+  return { id: 'repo:' + path, path, titulo: c ? c.titulo : titulo(nombre), area, url: urlArchivo(path), size, sha };
+}
+async function listarRepo() {
+  let r, rama;
+  for (rama of ['main', 'master']) {
+    r = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/git/trees/${rama}?recursive=1`, { headers: { Accept: 'application/vnd.github+json' }, cache: 'no-store' });
+    if (r.status !== 404) break;
+  }
+  if (r.status === 404 || r.status === 409) return { docs: [], vacio: true };
+  if (r.status === 403 || r.status === 429) throw new Error('GitHub limitó las consultas por un rato. Intente en unos minutos.');
+  if (!r.ok) throw new Error('No se pudo leer la lista (' + r.status + ').');
+  RAMA = rama; guardar('bv-rama', rama);
+  const data = await r.json();
+  const docs = (data.tree || [])
+    .filter((t) => t.type === 'blob' && /\.pdf$/i.test(t.path))
+    .map((t) => docDeRepo(t.path, t.size, t.sha));
+  return { docs, vacio: false };
+}
+// Documentos de la lista que todavía no están subidos.
+function reconoce(c, d) {
+  if (d.area !== c.area) return false;
+  const t = ' ' + plegar(d.titulo + ' ' + d.path.split('/').pop()).replace(/[^a-z0-9]+/g, ' ') + ' ';
+  return c.clave.every((w) => t.includes(' ' + w + ' ')) && !(c.no || []).some((w) => t.includes(' ' + w + ' '));
+}
+const pendientes = () => CATALOGO.filter((c) => !E.docs.some((d) => d.path && reconoce(c, d)));
+async function cargarRepo(forzar) {
+  const cache = leer('bv-lista', null);
+  if (cache) { E.docs = cache.docs; E.estadoRepo = cache.vacio ? 'vacio' : 'ok'; pintar(); }
+  if (!forzar && cache && Date.now() - cache.t < 5 * 60 * 1000) return;
+  if (!navigator.onLine) { if (!cache) { E.estadoRepo = 'error'; E.errorRepo = 'Sin conexión. Conéctese una vez para cargar la lista.'; pintar(); } return; }
+  try {
+    const res = await listarRepo();
+    E.docs = res.docs; E.estadoRepo = res.vacio ? 'vacio' : 'ok';
+    guardar('bv-lista', { t: Date.now(), docs: res.docs, vacio: res.vacio });
+    if (forzar) aviso('Lista actualizada: ' + res.docs.length + ' documentos');
+  } catch (e) {
+    if (!cache) { E.estadoRepo = 'error'; E.errorRepo = e.message; } else if (forzar) aviso(e.message);
+  }
+  pintar();
+}
+async function cargarLocales() {
+  try {
+    const arr = await idbAll('archivos');
+    E.locales = arr.map((a) => ({ id: a.id, titulo: a.titulo, area: 'mis', size: a.size, local: true, t: a.t })).sort((a, b) => b.t - a.t);
+  } catch (e) { E.locales = []; }
+}
+async function cargarTextos() {
+  try {
+    const arr = await idbAll('texto');
+    for (const t of arr) E.textos.set(t.id, { pages: t.pages, plegadas: t.pages.map(plegar) });
+  } catch (e) {}
+}
+
+/* ================= Pestañas ================= */
+function areasPresentes() {
+  const s = new Set(E.docs.map((d) => d.area));
+  const extra = [...s].filter((a) => !ORDEN.includes(a) && a !== 'otros').sort();
+  return ORDEN.concat(extra, s.has('otros') ? ['otros'] : []);
+}
+function pintarChips() {
+  const tabs = [['todos', 'Todos']].concat(areasPresentes().map((a) => [a, etiquetaArea(a)]), [['favoritos', 'Favoritos'], ['descargados', 'En el teléfono'], ['mis', 'Mis documentos']]);
+  const nav = $('chips'); nav.textContent = '';
+  for (const [k, txt] of tabs) nav.append(el('button', { class: 'chip', 'aria-pressed': String(E.pestana === k), onclick: () => { E.pestana = k; pintar(); window.scrollTo(0, 0); } }, txt));
+}
+
+/* ================= Tarjetas ================= */
+function tarjeta(d) {
+  const fav = E.favs.has(d.id);
+  const bajado = d.local || d.id in E.bajados;
+  const nuevo = !d.local && bajado && E.bajados[d.id] && d.sha && E.bajados[d.id] !== d.sha;
+  const u = E.ultimo[d.id];
+  const meta = [];
+  if (E.pestana === 'todos' || E.q || E.pestana === 'favoritos' || E.pestana === 'descargados') meta.push(etiquetaArea(d.area));
+  if (d.size) meta.push(mb(d.size));
+  if (u) meta.push('pág. ' + u.p);
+  const metaEl = el('div', { class: 'meta' }, meta.join(' · '));
+  if (E.ocupado[d.id]) metaEl.append(' · ', el('span', { class: 'nuevo' }, E.ocupado[d.id]));
+  else if (nuevo) metaEl.append(' · ', el('span', { class: 'nuevo' }, 'Hay versión nueva'));
+  else if (bajado && !d.local) metaEl.append(' · ', el('span', { class: 'ok' }, 'En el teléfono'));
+
+  const btnFav = el('button', { class: 'btn-icono', 'aria-pressed': String(fav), 'aria-label': fav ? 'Quitar de favoritos' : 'Agregar a favoritos', onclick: () => alternarFav(d.id) }, svg(ICO.estrella, { fill: fav }));
+  let btn2;
+  if (d.local) btn2 = el('button', { class: 'btn-icono', 'aria-label': 'Eliminar del teléfono', onclick: () => eliminarLocal(d) }, svg(ICO.borrar));
+  else btn2 = el('button', {
+    class: 'btn-icono' + (bajado && !nuevo ? ' bajado' : ''), disabled: !!E.ocupado[d.id],
+    'aria-label': bajado && !nuevo ? 'Quitar del teléfono' : 'Guardar en el teléfono para leer sin internet',
+    onclick: () => (bajado && !nuevo ? quitarDescarga(d) : descargar(d))
+  }, svg(bajado && !nuevo ? ICO.bajado : ICO.bajar));
+
+  return el('div', { class: 'doc' },
+    el('button', { class: 'abrir', onclick: () => abrir(d) },
+      el('span', { class: 'pdf-ico', 'aria-hidden': 'true' }, 'PDF'),
+      el('span', { class: 'txt' }, el('div', { class: 'titulo' }, d.titulo), metaEl)),
+    btnFav, btn2);
+}
+const ordenar = (arr) => arr.slice().sort((a, b) => a.titulo.localeCompare(b.titulo, 'es', { numeric: true }));
+function vacio(titulo, ...texto) { return el('div', { class: 'vacio' }, el('strong', null, titulo), ...texto); }
+
+/* ================= Pantalla principal ================= */
+function pintar() {
+  pintarChips();
+  const m = $('contenido'); m.textContent = '';
+  if (E.q.trim()) return pintarBusqueda(m);
+  const p = E.pestana;
+
+  if (p === 'mis') {
+    m.append(el('div', { class: 'fila-accion' }, el('button', { class: 'btn', onclick: () => $('archivo').click() }, svg('M12 5v14M5 12h14'), 'Agregar PDF del teléfono')));
+    m.append(el('p', { class: 'nota' }, 'Estos archivos se guardan solo en este teléfono y no se publican. Úselo para libros y manuales con derechos de autor.'));
+    if (!E.locales.length) m.append(vacio('Aún no hay documentos propios'));
+    else m.append(el('div', { class: 'lista' }, E.locales.map(tarjeta)));
+    return;
+  }
+  if (p === 'favoritos') {
+    const arr = ordenar(todos().filter((d) => E.favs.has(d.id)));
+    m.append(arr.length ? el('div', { class: 'lista', style: 'margin-top:4px' }, arr.map(tarjeta)) : vacio('Sin favoritos', 'Toque la estrella de un documento para tenerlo aquí.'));
+    return;
+  }
+  if (p === 'descargados') {
+    const arr = ordenar(todos().filter((d) => d.local || d.id in E.bajados));
+    m.append(arr.length ? el('div', { class: 'lista', style: 'margin-top:4px' }, arr.map(tarjeta)) : vacio('Nada guardado todavía', 'Toque la flecha de un documento para poder leerlo sin internet.'));
+    return;
+  }
+
+  if (p === 'ajustes') return pintarAjustes(m);
+
+  // Estado de la lista del repositorio
+  if (E.estadoRepo === 'cargando' && !E.docs.length) m.append(el('p', { class: 'nota' }, 'Cargando la biblioteca…'));
+  if (E.estadoRepo === 'error' && !E.docs.length) m.append(el('div', { class: 'aviso-error' }, el('p', null, 'No se pudo cargar la lista: ' + E.errorRepo), el('button', { class: 'btn sec', onclick: () => cargarRepo(true) }, 'Reintentar')));
+
+  const pend = pendientes();
+  const seccionArea = (a, conTitulo) => {
+    const listos = ordenar(E.docs.filter((d) => d.area === a));
+    const faltan = pend.filter((c) => c.area === a);
+    const total = listos.length + faltan.length;
+    if (!total) return;
+    if (conTitulo) m.append(el('h2', { class: 'seccion' }, etiquetaArea(a) + ' · ' + listos.length + ' de ' + total + ' en la app'));
+    if (listos.length) m.append(el('div', { class: 'lista' }, listos.map(tarjeta)));
+    if (faltan.length) {
+      if (!conTitulo || listos.length) m.append(el('h3', { class: 'subseccion' }, 'Por agregar · se abren en internet'));
+      m.append(el('div', { class: 'lista' }, faltan.map(tarjetaPendiente)));
+    }
+  };
+
+  if (p === 'todos') {
+    const recientes = Object.entries(E.ultimo).sort((a, b) => b[1].t - a[1].t).map(([id]) => porId(id)).filter(Boolean).slice(0, 3);
+    if (recientes.length) m.append(el('h2', { class: 'seccion' }, 'Seguir leyendo'), el('div', { class: 'lista' }, recientes.map(tarjeta)));
+    for (const a of areasPresentes()) seccionArea(a, true);
+    return;
+  }
+  const antes = m.childNodes.length;
+  if (esAdmin() && ORDEN.includes(p)) m.append(el('div', { class: 'fila-accion' }, el('button', { class: 'btn sec', onclick: () => elegirParaSubir(p) }, svg(ICO.subir), 'Subir PDF a ' + etiquetaArea(p))));
+  const antes2 = m.childNodes.length;
+  seccionArea(p, false);
+  if (m.childNodes.length === antes2) m.append(vacio('Sin documentos en ' + etiquetaArea(p), esAdmin() ? '' : 'Pronto se agregarán documentos en esta sección.'));
+}
+
+/* ================= Documento por agregar ================= */
+function tarjetaPendiente(c) {
+  const link = enlaceDe(c);
+  const clave = 'cat:' + c.area + '/' + c.archivo;
+  const metaEl = el('div', { class: 'meta' });
+  if (E.pestana === 'todos' && !E.q) { /* el área ya está en el título de la sección */ } else metaEl.append(etiquetaArea(c.area) + ' · ');
+  if (E.ocupado[clave]) metaEl.append(el('span', { class: 'nuevo' }, E.ocupado[clave]));
+  else metaEl.append(link ? (c.enlace ? 'Abrir en la fuente oficial' : 'Buscar en internet') : 'Se agrega cuando tenga el PDF');
+  const abrirLink = () => { if (link) window.open(link, '_blank', 'noopener'); else aviso(esAdmin() ? 'Toque la flecha para subir el PDF.' : 'Este documento se agregará pronto.'); };
+  const btns = [];
+  if (link) btns.push(el('button', { class: 'btn-icono', 'aria-label': c.enlace ? 'Abrir en la fuente' : 'Buscar en internet', onclick: abrirLink }, svg(c.enlace ? ICO.externo : ICO.lupa)));
+  if (esAdmin()) btns.push(el('button', { class: 'btn-icono subir', disabled: !!E.ocupado[clave], 'aria-label': 'Subir el PDF de ' + c.titulo, onclick: () => elegirParaSubir(c.area, c.archivo, clave) }, svg(ICO.subir)));
+  return el('div', { class: 'doc pendiente' },
+    el('button', { class: 'abrir', onclick: abrirLink },
+      el('span', { class: 'pdf-ico web', 'aria-hidden': 'true' }, link ? 'WEB' : '···'),
+      el('span', { class: 'txt' }, el('div', { class: 'titulo' }, c.titulo), metaEl)),
+    ...btns);
+}
+
+/* ================= Ajustes: compartir y administrar ================= */
+const URL_APP = () => location.origin + location.pathname.replace(/index\.html$/, '');
+async function compartir() {
+  const datos = { title: 'Biblioteca Virtual', text: 'Leyes, códigos y manuales para leer en el teléfono, también sin internet:', url: URL_APP() };
+  try {
+    if (navigator.share) await navigator.share(datos);
+    else { await navigator.clipboard.writeText(datos.url); aviso('Enlace copiado'); }
+  } catch (e) { /* el usuario canceló */ }
+}
+function pintarAjustes(m) {
+  m.append(el('h2', { class: 'seccion' }, 'Compartir'));
+  m.append(el('div', { class: 'panel' },
+    el('p', null, 'Envíe este enlace por WhatsApp o correo. Quien lo abra en Safari o Chrome puede instalar la app con ', el('strong', null, 'Agregar a inicio'), '.'),
+    el('p', { class: 'url' }, URL_APP()),
+    el('button', { class: 'btn', onclick: compartir }, svg(ICO.compartir), 'Compartir la app')));
+
+  m.append(el('h2', { class: 'seccion' }, 'Administrar la biblioteca'));
+  const panel = el('div', { class: 'panel' });
+  m.append(panel);
+  if (esAdmin()) {
+    panel.append(
+      el('p', null, el('strong', { class: 'ok' }, 'Modo administrador activo. '), 'En cada documento por agregar aparece una flecha ↑ para subir su PDF. Lo que suba lo verán todos.'),
+      el('div', { class: 'fila' },
+        el('button', { class: 'btn', onclick: () => elegirParaSubir(null) }, svg(ICO.subir), 'Subir otro PDF'),
+        el('button', { class: 'btn sec', onclick: () => { if (confirm('¿Quitar la clave de este teléfono?')) { guardar('bv-token', null); try { localStorage.removeItem('bv-token'); } catch (e) {} pintar(); } } }, 'Quitar clave')));
+  } else {
+    const inp = el('input', { type: 'password', id: 'token', placeholder: 'Pegue aquí la clave de GitHub', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false' });
+    panel.append(
+      el('p', null, 'Solo para quien administra la biblioteca. Con la clave de GitHub puede subir PDF directo desde la app, sin crear carpetas.'),
+      el('label', { for: 'token', class: 'etiqueta' }, 'Clave de acceso de GitHub'), inp,
+      el('button', { class: 'btn', onclick: () => activarAdmin(inp.value.trim()) }, 'Activar'),
+      el('p', { class: 'nota' }, 'La clave se guarda solo en este teléfono.'));
+  }
+}
+const token = () => leer('bv-token', null);
+const esAdmin = () => !!token();
+async function gh(path, opts) {
+  return fetch('https://api.github.com/repos/' + OWNER + '/' + REPO + path, Object.assign({ cache: 'no-store' }, opts, { headers: Object.assign({ Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + token() }, (opts || {}).headers) }));
+}
+async function activarAdmin(t) {
+  if (!t) return aviso('Pegue la clave primero.');
+  guardar('bv-token', t);
+  try {
+    const r = await gh('');
+    const j = r.ok ? await r.json() : null;
+    if (!r.ok || !j.permissions || !j.permissions.push) throw new Error(r.status === 401 ? 'La clave no es válida.' : 'La clave no tiene permiso para escribir en ' + REPO + '.');
+    aviso('Listo: modo administrador activo');
+  } catch (e) {
+    try { localStorage.removeItem('bv-token'); } catch (x) {}
+    aviso(e.message || 'No se pudo comprobar la clave.', 5000);
+  }
+  pintar();
+}
+
+/* ================= Subir PDF a GitHub ================= */
+const limpiarNombre = (n) => (n.replace(/\.pdf$/i, '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'documento') + '.pdf';
+let subidaPendiente = null;
+function elegirParaSubir(area, archivo, clave) {
+  if (!area) {
+    const opciones = ORDEN.map((a, i) => (i + 1) + '. ' + etiquetaArea(a)).join('\n');
+    const v = prompt('¿En qué área va el PDF?\n' + opciones + '\n\nEscriba el número:', '1');
+    const i = parseInt(v, 10) - 1;
+    if (!(i >= 0 && i < ORDEN.length)) return;
+    area = ORDEN[i];
+  }
+  subidaPendiente = { area, archivo, clave };
+  $('archivoSubir').click();
+}
+function base64(file) {
+  return new Promise((ok, mal) => { const fr = new FileReader(); fr.onload = () => ok(String(fr.result).split(',')[1]); fr.onerror = () => mal(fr.error); fr.readAsDataURL(file); });
+}
+async function subirPdf(file, area, archivo, clave) {
+  const nombre = archivo || limpiarNombre(file.name);
+  const path = 'documentos/' + area + '/' + nombre;
+  const k = clave || 'subida:' + path;
+  if (file.size > 45 * 1048576) return aviso('El PDF pesa más de 45 MB. Súbalo desde la página de GitHub o use uno más liviano.', 6000);
+  E.ocupado[k] = 'Subiendo…'; pintar();
+  try {
+    const ruta = '/contents/' + path.split('/').map(encodeURIComponent).join('/');
+    let sha;
+    const ex = await gh(ruta + '?ref=' + RAMA);
+    if (ex.ok) sha = (await ex.json()).sha;
+    const body = { message: 'Agregar ' + nombre + ' desde la app', content: await base64(file), branch: RAMA };
+    if (sha) body.sha = sha;
+    const r = await gh(ruta, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    if (r.status === 401) throw new Error('La clave venció o no es válida. Actívela de nuevo en Ajustes.');
+    if (!r.ok) throw new Error('GitHub no aceptó el archivo (' + r.status + ').');
+    const j = await r.json();
+    const d = docDeRepo(path, file.size, j.content && j.content.sha);
+    E.docs = E.docs.filter((x) => x.id !== d.id).concat(d);
+    guardar('bv-lista', { t: Date.now(), docs: E.docs, vacio: false });
+    // Queda guardado en este teléfono y listo para buscar dentro del texto.
+    const c = await caches.open(DOCS_CACHE);
+    await c.put(d.url, new Response(file, { headers: { 'Content-Type': 'application/pdf' } }));
+    E.bajados[d.id] = d.sha || true; guardar('bv-bajados', E.bajados);
+    if (pdfLib()) { E.ocupado[k] = 'Preparando búsqueda…'; pintar(); await indexar(d.id, await file.arrayBuffer()); }
+    aviso('Subido: ya lo pueden leer todos');
+  } catch (e) {
+    aviso(navigator.onLine ? (e.message || 'No se pudo subir.') : 'Sin conexión. Intente cuando tenga internet.', 6000);
+  }
+  delete E.ocupado[k]; pintar();
+}
+
+/* ================= Búsqueda general ================= */
+function fragmento(orig, pleg, i, n) {
+  const a = Math.max(0, i - 60), b = Math.min(orig.length, i + n + 80);
+  return el('div', { class: 'frag' }, (a > 0 ? '…' : '') + orig.slice(a, i).replace(/\s+/g, ' '), el('mark', null, orig.slice(i, i + n)), orig.slice(i + n, b).replace(/\s+/g, ' ') + (b < orig.length ? '…' : ''));
+}
+function pintarBusqueda(m) {
+  const q = plegar(E.q.trim().replace(/\s+/g, ' '));
+  const palabras = q.split(' ');
+  const enTitulo = ordenar(todos().filter((d) => { const t = plegar(d.titulo + ' ' + etiquetaArea(d.area)); return palabras.every((w) => t.includes(w)); }));
+  if (enTitulo.length) m.append(el('h2', { class: 'seccion' }, 'Documentos · ' + enTitulo.length), el('div', { class: 'lista' }, enTitulo.map(tarjeta)));
+  const pendTitulo = pendientes().filter((c) => { const t = plegar(c.titulo + ' ' + etiquetaArea(c.area)); return palabras.every((w) => t.includes(w)); });
+  if (pendTitulo.length) m.append(el('h2', { class: 'seccion' }, 'Por agregar · ' + pendTitulo.length), el('div', { class: 'lista' }, pendTitulo.map(tarjetaPendiente)));
+
+  const hits = []; let total = 0;
+  for (const [id, tx] of E.textos) {
+    const d = porId(id); if (!d) continue;
+    tx.plegadas.forEach((pg, k) => {
+      let i = pg.indexOf(q);
+      while (i !== -1) { total++; if (hits.length < 80) hits.push({ d, p: k + 1, frag: fragmento(tx.pages[k], pg, i, q.length) }); i = pg.indexOf(q, i + q.length); }
+    });
+  }
+  if (hits.length) {
+    m.append(el('h2', { class: 'seccion' }, 'Dentro del texto · ' + total + (total > hits.length ? ' (primeros ' + hits.length + ')' : '')));
+    m.append(el('div', { class: 'lista' }, hits.map((h) => el('button', { class: 'hit', onclick: () => abrir(h.d, h.p, E.q.trim()) }, el('div', { class: 'de' }, h.d.titulo + ' · pág. ' + h.p), h.frag))));
+  }
+  const sinIndice = todos().filter((d) => !E.textos.has(d.id)).length;
+  if (!enTitulo.length && !hits.length && !pendTitulo.length) m.append(vacio('Sin resultados para “' + E.q.trim() + '”'));
+  if (sinIndice) m.append(el('p', { class: 'nota' }, 'La búsqueda dentro del texto incluye solo los documentos guardados en el teléfono (' + E.textos.size + ' de ' + todos().length + '). Toque la flecha de un documento para incluirlo.'));
+}
+
+/* ================= Favoritos ================= */
+function alternarFav(id) {
+  E.favs.has(id) ? E.favs.delete(id) : E.favs.add(id);
+  guardar('bv-favs', [...E.favs]); pintar();
+  if (R.doc && R.doc.id === id) pintarFavLector();
+}
+
+/* ================= Texto para buscar ================= */
+async function extraerTexto(pdf, progreso) {
+  const pages = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const pg = await pdf.getPage(i);
+    const tc = await pg.getTextContent();
+    pages.push(tc.items.map((it) => it.str + (it.hasEOL ? '\n' : ' ')).join('').replace(/[ \t]+/g, ' '));
+    if (progreso) progreso(i, pdf.numPages);
+  }
+  return pages;
+}
+async function indexar(id, buf, progreso) {
+  const pdf = await pdfLib().getDocument({ data: buf }).promise;
+  const pages = await extraerTexto(pdf, progreso);
+  cerrarPdf(pdf);
+  await idbPut('texto', { id, pages });
+  E.textos.set(id, { pages, plegadas: pages.map(plegar) });
+  return pages;
+}
+
+/* ================= Guardar en el teléfono ================= */
+async function descargar(d) {
+  if (!pdfLib()) return aviso('Falta conexión para preparar el lector. Intente de nuevo con internet.');
+  E.ocupado[d.id] = 'Descargando…'; pintar();
+  try {
+    const res = await fetch(d.url, { cache: 'no-store' });
+    if (!res.ok) throw new Error('No se pudo descargar (' + res.status + ').');
+    const buf = await res.clone().arrayBuffer();
+    const c = await caches.open(DOCS_CACHE);
+    await c.put(absoluta(d.url), res);
+    await indexar(d.id, buf, (i, n) => { E.ocupado[d.id] = 'Preparando búsqueda ' + i + '/' + n; if (i % 5 === 0 || i === n) pintar(); });
+    E.bajados[d.id] = d.sha || true; guardar('bv-bajados', E.bajados);
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
+    aviso('Listo: ya puede leerlo sin internet');
+  } catch (e) {
+    aviso(navigator.onLine ? (e.message || 'No se pudo descargar.') : 'Sin conexión. Intente cuando tenga internet.');
+  }
+  delete E.ocupado[d.id]; pintar();
+}
+async function quitarDescarga(d) {
+  if (!confirm('¿Quitar “' + d.titulo + '” del teléfono? Podrá volver a descargarlo.')) return;
+  const c = await caches.open(DOCS_CACHE); await c.delete(absoluta(d.url));
+  await idbDel('texto', d.id); E.textos.delete(d.id);
+  delete E.bajados[d.id]; guardar('bv-bajados', E.bajados); pintar();
+}
+
+/* ================= Mis documentos ================= */
+$('archivo').addEventListener('change', async (ev) => {
+  const files = [...ev.target.files]; ev.target.value = '';
+  for (const f of files) {
+    if (!/\.pdf$/i.test(f.name) && f.type !== 'application/pdf') { aviso('“' + f.name + '” no es un PDF.'); continue; }
+    const id = 'local:' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
+    const rec = { id, titulo: titulo(f.name), blob: f, size: f.size, t: Date.now() };
+    try {
+      await idbPut('archivos', rec);
+      await cargarLocales();
+      E.ocupado[id] = 'Preparando búsqueda…'; pintar();
+      if (pdfLib()) await indexar(id, await f.arrayBuffer(), (i, n) => { E.ocupado[id] = 'Preparando búsqueda ' + i + '/' + n; if (i % 5 === 0 || i === n) pintar(); });
+    } catch (e) { aviso('No se pudo guardar “' + f.name + '”.'); }
+    delete E.ocupado[id];
+  }
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
+  pintar();
+});
+async function eliminarLocal(d) {
+  if (!confirm('¿Eliminar “' + d.titulo + '” de este teléfono?')) return;
+  await idbDel('archivos', d.id); await idbDel('texto', d.id); E.textos.delete(d.id);
+  E.favs.delete(d.id); guardar('bv-favs', [...E.favs]);
+  delete E.ultimo[d.id]; guardar('bv-ultimo', E.ultimo);
+  await cargarLocales(); pintar();
+}
+
+/* ================= Lector ================= */
+const R = { doc: null, pdf: null, paginas: [], zoom: 1, actual: 1, obs: null, hits: [], hit: -1, textos: null, abierto: false, gen: 0 };
+const ZOOMS = [1, 1.5, 2, 3];
+
+async function datosDoc(d) {
+  if (d.local) { const a = await idbGet('archivos', d.id); if (!a) throw new Error('No se encontró el archivo.'); return a.blob.arrayBuffer(); }
+  const c = await caches.open(DOCS_CACHE); const hit = await c.match(absoluta(d.url));
+  if (hit) return hit.arrayBuffer();
+  const res = await fetch(d.url);
+  if (!res.ok) throw new Error('No se pudo abrir (' + res.status + ').');
+  return res.arrayBuffer();
+}
+async function abrir(d, pagina, buscar) {
+  if (!pdfLib()) return aviso('El lector necesita internet la primera vez. Conéctese y vuelva a intentarlo.');
+  cerrarLector(true);
+  const gen = ++R.gen;
+  R.doc = d; R.blob = null; R.zoom = 1; R.hits = []; R.hit = -1; R.textos = E.textos.has(d.id) ? E.textos.get(d.id).pages : null;
+  $('lecTitulo').textContent = d.titulo; pintarFavLector();
+  $('lecBarraBuscar').classList.add('oculto'); $('lecQ').value = ''; $('lecCuenta').textContent = '';
+  const cont = $('paginas'); cont.textContent = ''; cont.append(el('div', { class: 'cargando' }, 'Abriendo…'));
+  $('lector').classList.remove('oculto'); document.body.style.overflow = 'hidden';
+  if (!R.abierto) { history.pushState({ lector: 1 }, ''); R.abierto = true; }
+  try {
+    const buf = await datosDoc(d);
+    R.blob = new Blob([buf], { type: 'application/pdf' }); // copia para compartir (el lector se queda con el original)
+    const pdf = await pdfLib().getDocument({ data: buf }).promise;
+    if (gen !== R.gen) { cerrarPdf(pdf); return; }
+    R.pdf = pdf;
+    const p1 = await pdf.getPage(1); const v = p1.getViewport({ scale: 1 });
+    cont.textContent = '';
+    R.paginas = [];
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const div = el('div', { class: 'pagina', 'data-n': i, style: 'aspect-ratio:' + v.width + '/' + v.height }, el('span', { class: 'num' }, String(i)));
+      R.paginas.push(div); cont.append(div);
+    }
+    aplicarZoom();
+    R.obs = new IntersectionObserver(alVer, { root: cont, rootMargin: '1200px 0px' });
+    R.paginas.forEach((p) => R.obs.observe(p));
+    const ir = pagina || (E.ultimo[d.id] && E.ultimo[d.id].p) || 1;
+    requestAnimationFrame(() => irA(ir, true));
+    actualizarPag();
+    if (buscar) { $('lecBarraBuscar').classList.remove('oculto'); $('lecQ').value = buscar; buscarEnDoc(pagina); }
+  } catch (e) {
+    cont.textContent = '';
+    cont.append(el('div', { class: 'cargando' }, navigator.onLine ? (e.message || 'No se pudo abrir el documento.') : 'Sin conexión. Guarde el documento en el teléfono para leerlo sin internet.'));
+  }
+}
+function alVer(entradas) {
+  for (const en of entradas) {
+    const div = en.target;
+    if (en.isIntersecting) { if (!div.dataset.ok) dibujar(div); }
+    else if (div.dataset.ok) { const cv = div.querySelector('canvas'); if (cv) { cv.width = cv.height = 0; cv.remove(); } delete div.dataset.ok; }
+  }
+}
+async function dibujar(div) {
+  const n = +div.dataset.n; div.dataset.ok = '1'; const gen = R.gen, zoom = R.zoom;
+  try {
+    const pg = await R.pdf.getPage(n);
+    if (gen !== R.gen || zoom !== R.zoom || !div.dataset.ok) return;
+    const base = pg.getViewport({ scale: 1 });
+    div.style.aspectRatio = base.width + '/' + base.height;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const escala = Math.min((div.clientWidth * dpr) / base.width, 4096 / base.width);
+    const vp = pg.getViewport({ scale: escala });
+    const cv = document.createElement('canvas'); cv.width = Math.floor(vp.width); cv.height = Math.floor(vp.height);
+    await pg.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise;
+    if (gen !== R.gen || zoom !== R.zoom || !div.dataset.ok) return;
+    const viejo = div.querySelector('canvas'); if (viejo) viejo.remove();
+    div.append(cv);
+  } catch (e) { delete div.dataset.ok; }
+}
+function aplicarZoom() {
+  const ancho = $('paginas').clientWidth - 16;
+  R.paginas.forEach((p) => { p.style.width = Math.round(ancho * R.zoom) + 'px'; });
+}
+function cambiarZoom(dir) {
+  const i = ZOOMS.indexOf(R.zoom) + dir; if (i < 0 || i >= ZOOMS.length || !R.pdf) return;
+  const pag = R.actual; R.zoom = ZOOMS[i];
+  R.paginas.forEach((p) => { const cv = p.querySelector('canvas'); if (cv) { cv.width = cv.height = 0; cv.remove(); } delete p.dataset.ok; R.obs.unobserve(p); });
+  aplicarZoom(); irA(pag, true);
+  R.paginas.forEach((p) => R.obs.observe(p));
+}
+function irA(n, instant) {
+  const p = R.paginas[Math.max(1, Math.min(n, R.paginas.length)) - 1]; if (!p) return;
+  $('paginas').scrollTo({ top: p.offsetTop - 8, behavior: instant ? 'auto' : 'smooth' });
+}
+function paginaVisible() {
+  const c = $('paginas'); const y = c.scrollTop + c.clientHeight / 3;
+  let lo = 0, hi = R.paginas.length - 1;
+  while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (R.paginas[mid].offsetTop <= y) lo = mid; else hi = mid - 1; }
+  return lo + 1;
+}
+function actualizarPag() {
+  if (!R.pdf) return;
+  R.actual = paginaVisible();
+  $('lecPag').textContent = R.actual + ' / ' + R.pdf.numPages;
+  E.ultimo[R.doc.id] = { p: R.actual, t: Date.now() }; guardar('bv-ultimo', E.ultimo);
+}
+let rafPag = 0;
+$('paginas').addEventListener('scroll', () => { if (!rafPag) rafPag = requestAnimationFrame(() => { rafPag = 0; actualizarPag(); }); }, { passive: true });
+function cerrarLector(silencioso) {
+  R.gen++;
+  if (R.obs) R.obs.disconnect(); R.obs = null;
+  R.paginas.forEach((p) => { const cv = p.querySelector('canvas'); if (cv) cv.width = cv.height = 0; });
+  R.paginas = [];
+  if (R.pdf) cerrarPdf(R.pdf); R.pdf = null;
+  if (!silencioso) { $('lector').classList.add('oculto'); document.body.style.overflow = ''; R.doc = null; pintar(); }
+}
+$('lecCerrar').addEventListener('click', () => { if (R.abierto) history.back(); else cerrarLector(); });
+window.addEventListener('popstate', () => { if (R.abierto) { R.abierto = false; cerrarLector(); } });
+$('zoomMas').addEventListener('click', () => cambiarZoom(1));
+$('zoomMenos').addEventListener('click', () => cambiarZoom(-1));
+$('lecPag').addEventListener('click', () => {
+  if (!R.pdf) return;
+  const v = prompt('Ir a la página (1 a ' + R.pdf.numPages + '):', R.actual);
+  const n = parseInt(v, 10); if (n) irA(n);
+});
+function pintarFavLector() {
+  const b = $('lecFav'); const on = R.doc && E.favs.has(R.doc.id);
+  b.setAttribute('aria-pressed', String(!!on)); b.setAttribute('aria-label', on ? 'Quitar de favoritos' : 'Agregar a favoritos');
+  b.querySelector('svg').setAttribute('fill', on ? 'currentColor' : 'none'); b.style.color = on ? '#CA8A04' : '';
+}
+$('lecFav').addEventListener('click', () => R.doc && alternarFav(R.doc.id));
+// Compartir el PDF abierto. Se llama sin esperas para que el iPhone muestre el menú de compartir.
+$('lecCompartir').addEventListener('click', () => {
+  const d = R.doc; if (!d) return;
+  if (!R.blob) return aviso('Espere a que termine de abrir el documento.');
+  const nombre = d.path ? d.path.split('/').pop() : limpiarNombre(d.titulo);
+  const archivo = new File([R.blob], nombre, { type: 'application/pdf' });
+  const texto = d.titulo + ' · Biblioteca Virtual';
+  let p;
+  if (navigator.canShare && navigator.canShare({ files: [archivo] })) p = navigator.share({ files: [archivo], title: texto });
+  else if (navigator.share) p = navigator.share({ title: texto, text: texto, url: d.local ? URL_APP() : d.url });
+  else {
+    const a = el('a', { href: URL.createObjectURL(archivo), download: nombre }); document.body.append(a); a.click(); a.remove();
+    return;
+  }
+  p.catch((e) => { if (e && e.name !== 'AbortError') aviso('No se pudo compartir. Intente de nuevo.'); });
+});
+$('lecBuscar').addEventListener('click', () => {
+  const f = $('lecBarraBuscar'); f.classList.toggle('oculto');
+  if (!f.classList.contains('oculto')) $('lecQ').focus();
+});
+async function buscarEnDoc(desdePagina) {
+  const q = plegar($('lecQ').value.trim().replace(/\s+/g, ' '));
+  if (!q || !R.pdf) { $('lecCuenta').textContent = ''; R.hits = []; return; }
+  if (!R.textos) { $('lecCuenta').textContent = 'Buscando…'; const gen = R.gen; const t = await extraerTexto(R.pdf); if (gen !== R.gen) return; R.textos = t; }
+  R.hits = [];
+  R.textos.forEach((t, k) => { if (plegar(t).includes(q)) R.hits.push(k + 1); });
+  if (!R.hits.length) { $('lecCuenta').textContent = 'Sin resultados'; return; }
+  const ref = desdePagina || R.actual;
+  R.hit = Math.max(0, R.hits.findIndex((p) => p >= ref));
+  mostrarHit();
+}
+function mostrarHit() {
+  const p = R.hits[R.hit];
+  $('lecCuenta').textContent = (R.hit + 1) + ' de ' + R.hits.length + ' pág.';
+  irA(p);
+}
+$('lecQ').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); $('lecQ').blur(); buscarEnDoc(); } });
+$('lecSig').addEventListener('click', () => { if (!R.hits.length) return buscarEnDoc(); R.hit = (R.hit + 1) % R.hits.length; mostrarHit(); });
+$('lecAnt').addEventListener('click', () => { if (!R.hits.length) return buscarEnDoc(); R.hit = (R.hit - 1 + R.hits.length) % R.hits.length; mostrarHit(); });
+window.addEventListener('resize', () => { if (R.pdf && R.zoom === 1) { const p = R.actual; aplicarZoom(); irA(p, true); } });
+
+/* ================= Buscador principal ================= */
+let tq;
+$('q').addEventListener('input', (e) => {
+  $('btnLimpiar').classList.toggle('oculto', !e.target.value);
+  clearTimeout(tq); tq = setTimeout(() => { E.q = e.target.value; pintar(); }, 200);
+});
+$('q').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } });
+$('btnLimpiar').addEventListener('click', () => { $('q').value = ''; E.q = ''; $('btnLimpiar').classList.add('oculto'); pintar(); $('q').focus(); });
+$('btnRecargar').addEventListener('click', () => cargarRepo(true));
+$('btnAjustes').addEventListener('click', () => { E.pestana = 'ajustes'; $('q').value = ''; E.q = ''; pintar(); window.scrollTo(0, 0); });
+$('archivoSubir').addEventListener('change', (ev) => {
+  const f = ev.target.files[0]; ev.target.value = '';
+  if (!f || !subidaPendiente) return;
+  if (!/\.pdf$/i.test(f.name) && f.type !== 'application/pdf') return aviso('Elija un archivo PDF.');
+  const s = subidaPendiente; subidaPendiente = null;
+  subirPdf(f, s.area, s.archivo, s.clave);
+});
+
+/* ================= Instalación ================= */
+let promptInstalar = null;
+window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); promptInstalar = e; $('btnInstalar').classList.remove('oculto'); });
+$('btnInstalar').addEventListener('click', async () => { if (!promptInstalar) return; promptInstalar.prompt(); await promptInstalar.userChoice; promptInstalar = null; $('btnInstalar').classList.add('oculto'); });
+const esIos = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const instalada = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+if (esIos && !instalada && !leer('bv-aviso-ios', false)) $('avisoIos').classList.remove('oculto');
+$('cerrarAviso').addEventListener('click', () => { $('avisoIos').classList.add('oculto'); guardar('bv-aviso-ios', true); });
+if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
+
+/* ================= Inicio ================= */
+(async function iniciar() {
+  pintar();
+  await Promise.all([cargarLocales(), cargarTextos()]);
+  pintar();
+  cargarRepo(false);
+})();
+window.addEventListener('online', () => cargarRepo(false));
+</script>
+</body>
+</html>
