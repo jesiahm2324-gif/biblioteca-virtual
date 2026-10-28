@@ -76,6 +76,16 @@ h2.seccion{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:va
 .doc .btn-icono:active{background:var(--celeste)}
 .doc .btn-icono:disabled{opacity:.5}
 
+#hoja{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.hoja-fondo{position:absolute;inset:0;background:rgba(2,6,23,.55)}
+.hoja-caja{position:relative;width:100%;max-width:560px;background:var(--tarjeta);border-radius:20px 20px 0 0;padding:12px 12px calc(12px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:6px;max-height:80vh;overflow:auto}
+.hoja-titulo{font-size:14px;color:var(--tenue);font-weight:600;text-align:center;padding:6px 12px 10px;border-bottom:1px solid var(--borde)}
+#hojaOpciones{display:flex;flex-direction:column;gap:6px;padding-top:6px}
+.hoja-op{min-height:52px;border:0;border-radius:14px;background:var(--fondo);font-size:17px;font-weight:600;color:var(--azul)}
+.hoja-op:active{background:var(--celeste)}
+.hoja-op.peligro{color:var(--peligro)}
+.hoja-op.cancelar{color:var(--texto);margin-top:4px}
+.doc .btn-icono.mas{width:36px}
 .grupos{display:flex;flex-direction:column;gap:8px}
 .grupo{background:var(--tarjeta);border:1px solid var(--borde);border-radius:16px;box-shadow:var(--sombra);overflow:hidden}
 .grupo-cab{width:100%;display:flex;align-items:center;gap:12px;min-height:56px;padding:0 14px 0 16px;background:none;border:0;text-align:left}
@@ -209,6 +219,13 @@ input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none;display
 <input type="file" id="archivo" accept="application/pdf,.pdf" multiple class="oculto">
 <input type="file" id="archivoSubir" accept="application/pdf,.pdf" class="oculto">
 <div id="toast" class="oculto" role="status"></div>
+<div id="hoja" class="oculto" role="dialog" aria-modal="true" aria-labelledby="hojaTitulo">
+  <div class="hoja-fondo" onclick="cerrarHoja()"></div>
+  <div class="hoja-caja">
+    <div class="hoja-titulo" id="hojaTitulo"></div>
+    <div id="hojaOpciones"></div>
+  </div>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
@@ -304,7 +321,8 @@ const ICO = {
   externo: 'M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5',
   lupa: 'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-4-4',
   subir: 'M12 20V9M7 14l5-5 5 5M5 4h14',
-  compartir: 'M12 3v12M7 8l5-5 5 5M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6'
+  compartir: 'M12 3v12M7 8l5-5 5 5M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6',
+  mas: 'M12 5.5a1.5 1.5 0 1 0 0-.01zM12 12a1.5 1.5 0 1 0 0-.01zM12 18.5a1.5 1.5 0 1 0 0-.01z'
 };
 const FOLD = { 'á':'a','à':'a','ä':'a','â':'a','é':'e','è':'e','ë':'e','ê':'e','í':'i','ì':'i','ï':'i','î':'i','ó':'o','ò':'o','ö':'o','ô':'o','ú':'u','ù':'u','ü':'u','û':'u','ñ':'n' };
 // Misma longitud que el texto original, para poder recortar fragmentos.
@@ -371,7 +389,7 @@ const porId = (id) => todos().find((d) => d.id === id);
 // documentos/portuario/x.pdf y documentos/documentos/Portuario/x.pdf van a "portuario".
 function areaDeRuta(path) {
   const partes = path.split('/');
-  if (partes.length < 2) return 'otros';
+  if (partes.length < 2 || partes.some((p) => p.startsWith('.'))) return 'otros'; // p. ej. un PDF dentro de .github
   const carpeta = plegar(partes[partes.length - 2]).replace(/[^a-z0-9]+/g, '');
   if (!carpeta || carpeta === 'documentos' || carpeta === 'documento') return 'otros';
   if (carpeta.startsWith('codigo')) return 'codigos';
@@ -461,7 +479,7 @@ function tarjeta(d) {
   const nuevo = !d.local && bajado && E.bajados[d.id] && d.sha && E.bajados[d.id] !== d.sha;
   const u = E.ultimo[d.id];
   const meta = [];
-  if (E.pestana === 'todos' || E.q || E.pestana === 'favoritos' || E.pestana === 'descargados') meta.push(etiquetaArea(d.area));
+  if (!E.enGrupo && (E.pestana === 'todos' || E.q || E.pestana === 'favoritos' || E.pestana === 'descargados')) meta.push(etiquetaArea(d.area));
   if (d.size) meta.push(mb(d.size));
   if (u) meta.push('pág. ' + u.p);
   const metaEl = el('div', { class: 'meta' }, meta.join(' · '));
@@ -482,7 +500,8 @@ function tarjeta(d) {
     el('button', { class: 'abrir', onclick: () => abrir(d) },
       el('span', { class: 'pdf-ico', 'aria-hidden': 'true' }, 'PDF'),
       el('span', { class: 'txt' }, el('div', { class: 'titulo' }, d.titulo), metaEl)),
-    btnFav, btn2);
+    btnFav, btn2,
+    esAdmin() && d.path ? el('button', { class: 'btn-icono mas', disabled: !!E.ocupado[d.id], 'aria-label': 'Más opciones: mover o eliminar', onclick: () => opcionesDoc(d) }, svg(ICO.mas, { fill: true })) : null);
 }
 const ordenar = (arr) => arr.slice().sort((a, b) => a.titulo.localeCompare(b.titulo, 'es', { numeric: true }));
 function vacio(titulo, ...texto) { return el('div', { class: 'vacio' }, el('strong', null, titulo), ...texto); }
@@ -534,7 +553,9 @@ function pintar() {
 
   if (p === 'todos') {
     // Pantalla principal compacta: cada área es una fila que se abre y se cierra.
-    const recientes = Object.entries(E.ultimo).sort((a, b) => b[1].t - a[1].t).map(([id]) => porId(id)).filter(Boolean).slice(0, 2);
+    const favoritos = ordenar(todos().filter((d) => E.favs.has(d.id)));
+    if (favoritos.length) m.append(el('h2', { class: 'seccion' }, '★ Favoritos'), el('div', { class: 'lista' }, favoritos.map(tarjeta)));
+    const recientes = Object.entries(E.ultimo).sort((a, b) => b[1].t - a[1].t).map(([id]) => porId(id)).filter((d) => d && !E.favs.has(d.id)).slice(0, 2);
     if (recientes.length) m.append(el('h2', { class: 'seccion' }, 'Seguir leyendo'), el('div', { class: 'lista' }, recientes.map(tarjeta)));
     m.append(el('h2', { class: 'seccion' }, 'Áreas'));
     const grupos = el('div', { class: 'grupos' });
@@ -553,7 +574,8 @@ function pintar() {
       const g = el('section', { class: 'grupo' + (abierto ? ' abierto' : '') }, cab);
       if (abierto) {
         if (esAdmin() && ORDEN.includes(a)) cuerpo.append(botonSubir(a));
-        if (!seccionArea(a, cuerpo)) cuerpo.append(el('p', { class: 'nota' }, esAdmin() ? 'Aún no hay documentos.' : 'Pronto se agregarán documentos en esta sección.'));
+        E.enGrupo = true; const n = seccionArea(a, cuerpo); E.enGrupo = false;
+        if (!n) cuerpo.append(el('p', { class: 'nota' }, esAdmin() ? 'Aún no hay documentos.' : 'Pronto se agregarán documentos en esta sección.'));
         g.append(cuerpo);
       }
       grupos.append(g);
@@ -643,15 +665,96 @@ async function activarAdmin(t) {
 const limpiarNombre = (n) => (n.replace(/\.pdf$/i, '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'documento') + '.pdf';
 let subidaPendiente = null;
 function elegirParaSubir(area, archivo, clave) {
-  if (!area) {
-    const opciones = ORDEN.map((a, i) => (i + 1) + '. ' + etiquetaArea(a)).join('\n');
-    const v = prompt('¿En qué área va el PDF?\n' + opciones + '\n\nEscriba el número:', '1');
-    const i = parseInt(v, 10) - 1;
-    if (!(i >= 0 && i < ORDEN.length)) return;
-    area = ORDEN[i];
-  }
+  if (!area) return hoja('¿En qué área va el PDF?', ORDEN.map((a) => ({ texto: etiquetaArea(a), accion: () => elegirParaSubir(a) })));
   subidaPendiente = { area, archivo, clave };
   $('archivoSubir').click();
+}
+
+/* ================= Menú de opciones (hoja inferior) ================= */
+function hoja(titulo, opciones) {
+  const h = $('hoja'); const lista = $('hojaOpciones');
+  $('hojaTitulo').textContent = titulo; lista.textContent = '';
+  for (const o of opciones) lista.append(el('button', { class: 'hoja-op' + (o.peligro ? ' peligro' : ''), onclick: () => { cerrarHoja(); o.accion(); } }, o.texto));
+  lista.append(el('button', { class: 'hoja-op cancelar', onclick: cerrarHoja }, 'Cancelar'));
+  h.classList.remove('oculto');
+}
+function cerrarHoja() { $('hoja').classList.add('oculto'); }
+
+/* ================= Administrar un documento: mover y eliminar ================= */
+function opcionesDoc(d) {
+  hoja(d.titulo, [
+    { texto: 'Mover a otra área', accion: () => hoja('Mover «' + d.titulo + '» a…', ORDEN.filter((a) => a !== d.area).map((a) => ({ texto: etiquetaArea(a), accion: () => moverDoc(d, a) }))) },
+    { texto: 'Eliminar de la biblioteca', peligro: true, accion: () => eliminarDoc(d) }
+  ]);
+}
+const rutaApi = (path) => '/contents/' + path.split('/').map(encodeURIComponent).join('/');
+async function shaDe(path) {
+  const r = await gh(rutaApi(path) + '?ref=' + RAMA);
+  if (r.status === 401) throw new Error('La clave venció o no es válida. Actívela de nuevo en Ajustes.');
+  if (r.status === 404) return null;
+  if (!r.ok) throw new Error('No se pudo consultar GitHub (' + r.status + ').');
+  return (await r.json()).sha;
+}
+async function borrarEnGithub(path, mensaje) {
+  const sha = await shaDe(path);
+  if (!sha) return;
+  const r = await gh(rutaApi(path), { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: mensaje, sha, branch: RAMA }) });
+  if (!r.ok) throw new Error('GitHub no permitió borrar el archivo (' + r.status + ').');
+}
+// Pasa favoritos, página leída, copia en el teléfono y texto de búsqueda al nuevo documento.
+async function trasladarDatos(viejo, nuevo) {
+  if (E.favs.delete(viejo.id)) E.favs.add(nuevo.id);
+  if (E.ultimo[viejo.id]) { E.ultimo[nuevo.id] = E.ultimo[viejo.id]; delete E.ultimo[viejo.id]; }
+  if (viejo.id in E.bajados) { E.bajados[nuevo.id] = E.bajados[viejo.id]; delete E.bajados[viejo.id]; }
+  guardar('bv-favs', [...E.favs]); guardar('bv-ultimo', E.ultimo); guardar('bv-bajados', E.bajados);
+  const t = E.textos.get(viejo.id);
+  if (t) { E.textos.set(nuevo.id, t); E.textos.delete(viejo.id); try { await idbPut('texto', { id: nuevo.id, pages: t.pages }); await idbDel('texto', viejo.id); } catch (e) {} }
+}
+async function olvidarDatos(d) {
+  E.favs.delete(d.id); delete E.ultimo[d.id]; delete E.bajados[d.id]; E.textos.delete(d.id);
+  guardar('bv-favs', [...E.favs]); guardar('bv-ultimo', E.ultimo); guardar('bv-bajados', E.bajados);
+  try { await idbDel('texto', d.id); const c = await caches.open(DOCS_CACHE); await c.delete(absoluta(d.url)); } catch (e) {}
+}
+async function moverDoc(d, area) {
+  const nombre = d.path.split('/').pop();
+  const destino = 'documentos/' + area + '/' + nombre;
+  E.ocupado[d.id] = 'Moviendo a ' + etiquetaArea(area) + '…'; pintar();
+  try {
+    const existe = await shaDe(destino);
+    if (existe && !confirm('Ya hay un archivo con ese nombre en ' + etiquetaArea(area) + '. ¿Reemplazarlo?')) throw new Error('');
+    const blob = await (await (async () => { const c = await caches.open(DOCS_CACHE); return (await c.match(absoluta(d.url))) || fetch(d.url); })()).blob();
+    const body = { message: 'Mover ' + nombre + ' a ' + area + ' desde la app', content: await base64(blob), branch: RAMA };
+    if (existe) body.sha = existe;
+    const r = await gh(rutaApi(destino), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    if (!r.ok) throw new Error('GitHub no aceptó el archivo (' + r.status + ').');
+    const j = await r.json();
+    await borrarEnGithub(d.path, 'Quitar ' + nombre + ' de su ubicación anterior');
+    const nuevo = docDeRepo(destino, d.size, j.content && j.content.sha);
+    await trasladarDatos(d, nuevo);
+    const c = await caches.open(DOCS_CACHE);
+    if (nuevo.id in E.bajados) await c.put(nuevo.url, new Response(blob, { headers: { 'Content-Type': 'application/pdf' } }));
+    await c.delete(absoluta(d.url));
+    E.docs = E.docs.filter((x) => x.id !== d.id && x.id !== nuevo.id).concat(nuevo);
+    guardar('bv-lista', { t: Date.now(), docs: E.docs, vacio: false });
+    aviso('Movido a ' + etiquetaArea(area));
+  } catch (e) {
+    if (e.message) aviso(navigator.onLine ? e.message : 'Sin conexión. Intente cuando tenga internet.', 6000);
+  }
+  delete E.ocupado[d.id]; pintar();
+}
+async function eliminarDoc(d) {
+  if (!confirm('¿Eliminar «' + d.titulo + '» de la biblioteca? Dejará de verse para todos.')) return;
+  E.ocupado[d.id] = 'Eliminando…'; pintar();
+  try {
+    await borrarEnGithub(d.path, 'Eliminar ' + d.path.split('/').pop() + ' desde la app');
+    await olvidarDatos(d);
+    E.docs = E.docs.filter((x) => x.id !== d.id);
+    guardar('bv-lista', { t: Date.now(), docs: E.docs, vacio: false });
+    aviso('Eliminado de la biblioteca');
+  } catch (e) {
+    aviso(navigator.onLine ? (e.message || 'No se pudo eliminar.') : 'Sin conexión. Intente cuando tenga internet.', 6000);
+  }
+  delete E.ocupado[d.id]; pintar();
 }
 function base64(file) {
   return new Promise((ok, mal) => { const fr = new FileReader(); fr.onload = () => ok(String(fr.result).split(',')[1]); fr.onerror = () => mal(fr.error); fr.readAsDataURL(file); });
@@ -720,7 +823,8 @@ function pintarBusqueda(m) {
 
 /* ================= Favoritos ================= */
 function alternarFav(id) {
-  E.favs.has(id) ? E.favs.delete(id) : E.favs.add(id);
+  if (E.favs.has(id)) { E.favs.delete(id); aviso('Quitado de Favoritos'); }
+  else { E.favs.add(id); aviso('Agregado a Favoritos: lo verá arriba en la pantalla principal'); }
   guardar('bv-favs', [...E.favs]); pintar();
   if (R.doc && R.doc.id === id) pintarFavLector();
 }
