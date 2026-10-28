@@ -32,6 +32,7 @@ jobs:
             ('laboral', 'Ley-438-Probidad-de-los-Servidores-Publicos.pdf', ['438', 'PROBIDAD'], [], [L % n for n in (826, 26950, 1199, 26745)]),
             ('laboral', 'Ley-822-Concertacion-Tributaria.pdf', ['822', 'CONCERTACION TRIBUTARIA', 'TEXTO CONSOLIDADO'], ['REGLAMENTO'], [L % n for n in (34139, 27663, 27298, 22879, 17957)]),
             ('laboral', 'Ley-539-Seguridad-Social.pdf', ['539', 'SEGURIDAD SOCIAL'], ['REGLAMENTO'], [L % n for n in (976, 1021, 12501, 16839)]),
+            ('laboral', 'Reglamento-General-Ley-Seguridad-Social.pdf', ['REGLAMENTO GENERAL', 'SEGURIDAD SOCIAL'], [], [L % n for n in (27722, 7905, 6532, 17421, 8001)] + ['https://sajurin.enriquebolanos.org/docs/JGRN_0975.pdf']),
             ('portuario', 'Ley-399-Transporte-Acuatico.pdf', ['399', 'TRANSPORTE ACUATICO'], ['REGLAMENTO'], ['https://faolex.fao.org/docs/pdf/nic30576.pdf'] + [L % n for n in (763, 33968, 31823, 32766, 31824)]),
             ('portuario', 'Reglamento-Transporte-Acuatico-Decreto-4877.pdf', ['REGLAMENTO', 'TRANSPORTE ACUATICO'], [], ['https://faolex.fao.org/docs/pdf/nic185687.pdf', 'https://faolex.fao.org/docs/pdf/nic180738.pdf'] + [L % n for n in (33968, 31824, 33287, 32736, 32766, 9089, 31823)]),
             ('portuario', 'Convenio-MARPOL-73-78.pdf', ['CONTAMINACION', 'BUQUES'], [], ['https://www.gob.mx/cms/uploads/attachment/file/902460/3_MARPOL.pdf', 'https://ri.furg.br/images/marpol_73_78-2002-completo.pdf']),
