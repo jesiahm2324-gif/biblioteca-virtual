@@ -327,7 +327,13 @@ const CATALOGO = [
 
   { area: 'pecuario', archivo: 'Ley-291-Salud-Animal-y-Sanidad-Vegetal.pdf', titulo: 'Ley 291, Salud Animal y Sanidad Vegetal', clave: ['291'] },
   { area: 'pecuario', archivo: 'Manual-Practico-PRV.pdf', titulo: 'Manual práctico de PRV (Pastoreo Racional Voisin)', clave: ['prv'], sinBuscar: true },
-  { area: 'pecuario', archivo: 'Manual-Ganaderia-Explotacion-Lechera.pdf', titulo: 'Manual de ganadería para explotación lechera', clave: ['lechera'], sinBuscar: true }
+  { area: 'pecuario', archivo: 'Manual-Ganaderia-Explotacion-Lechera.pdf', titulo: 'Manual de ganadería para explotación lechera', clave: ['lechera'], sinBuscar: true },
+
+  // De dominio público: la tarea semanal la descarga a la biblioteca.
+  { area: 'espiritual', archivo: 'Biblia-Reina-Valera-1909.pdf', titulo: 'Santa Biblia, Reina-Valera 1909', clave: ['biblia'], enlace: 'https://ebible.org/pdf/spaRV1909/spaRV1909_a4.pdf' },
+  // Guías oficiales gratuitas: se leen en la página de quien las publica (no se copian a la biblioteca).
+  { area: 'financiera', externo: true, archivo: 'Domina-tus-finanzas-SBS.pdf', titulo: 'Domina tus finanzas y maneja tu dinero (SBS del Perú)', clave: ['domina', 'finanzas'], enlace: 'https://www.sbs.gob.pe/Portals/0/jer/mat_edu_finan/Jovenes%20y%20adultos/Guias/Domina-tus-finanzas.pdf' },
+  { area: 'financiera', externo: true, archivo: 'Guia-habilidades-economicas-BCRD.pdf', titulo: 'Guía para desarrollar tus habilidades económicas y financieras (Banco Central de la Rep. Dominicana)', clave: ['habilidades', 'economicas'], enlace: 'https://cdn.bancentral.gov.do/documents/sefbcrd/documents/Guia-para-desarrollar-tus-habilidades-economicas-y-financieras.pdf' }
 ];
 const enlaceDe = (c) => c.enlace || (c.sinBuscar ? null : 'https://www.google.com/search?q=' + encodeURIComponent(c.buscar || (c.titulo.replace(/[(),]/g, ' ') + ' Nicaragua texto consolidado pdf')));
 
@@ -497,7 +503,8 @@ function reconoce(c, d) {
   const t = ' ' + plegar(d.titulo + ' ' + d.path.split('/').pop()).replace(/[^a-z0-9]+/g, ' ') + ' ';
   return c.clave.every((w) => t.includes(' ' + w + ' ')) && !(c.no || []).some((w) => t.includes(' ' + w + ' '));
 }
-const pendientes = () => CATALOGO.filter((c) => !E.docs.some((d) => d.path && reconoce(c, d)));
+const pendientes = () => CATALOGO.filter((c) => !c.externo && !E.docs.some((d) => d.path && reconoce(c, d)));
+const externos = (a) => CATALOGO.filter((c) => c.externo && c.area === a && !E.docs.some((d) => d.path && reconoce(c, d)));
 async function cargarRepo(forzar) {
   const cache = leer('bv-lista', null);
   if (cache) { E.docs = cache.docs; E.estadoRepo = cache.vacio ? 'vacio' : 'ok'; pintar(); }
@@ -710,7 +717,7 @@ function pintar() {
   if (E.estadoRepo === 'error' && !E.docs.length) m.append(el('div', { class: 'aviso-error' }, el('p', null, 'No se pudo cargar la lista: ' + E.errorRepo), el('button', { class: 'btn sec', onclick: () => cargarRepo(true) }, 'Reintentar')));
   const pend = pendientes();
   const cuenta = (a) => { const l = E.docs.filter((d) => d.area === a).length, t = l + pend.filter((c) => c.area === a).length; return { l, t }; };
-  const textoCuenta = (a) => { const { l, t } = cuenta(a); return !t ? 'Vacía' : l === t ? String(l) : l + ' de ' + t; };
+  const textoCuenta = (a) => { const { l, t } = cuenta(a); const x = externos(a).length; return !t ? (x ? x + (x === 1 ? ' guía' : ' guías') : 'Vacía') : l === t ? String(l) : l + ' de ' + t; };
 
   if (p === 'todos') {
     const ult = recientesDocs()[0];
@@ -769,8 +776,10 @@ function pintar() {
   const faltan = pend.filter((c) => c.area === p);
   if (listos.length) m.append(lista(listos));
   if (faltan.length) m.append(el('h3', { class: 'subseccion' }, 'Por agregar · se abren en internet'), lista(faltan, tarjetaPendiente));
+  const ext = externos(p);
+  if (ext.length) m.append(el('h3', { class: 'subseccion' }, 'Para leer en la página oficial · gratis'), lista(ext, tarjetaPendiente));
   E.enArea = false;
-  if (!listos.length && !faltan.length) m.append(vacio('Sin documentos en ' + etiquetaArea(p), editando() ? '' : 'Pronto se agregarán documentos en esta sección.'));
+  if (!listos.length && !faltan.length && !ext.length) m.append(vacio('Sin documentos en ' + etiquetaArea(p), editando() ? '' : 'Pronto se agregarán documentos en esta sección.'));
 }
 
 /* ================= Documento por agregar ================= */
@@ -780,11 +789,11 @@ function tarjetaPendiente(c) {
   const metaEl = el('div', { class: 'meta' });
   if (!E.enArea) metaEl.append(etiquetaArea(c.area) + ' · ');
   if (E.ocupado[clave]) metaEl.append(el('span', { class: 'nuevo' }, E.ocupado[clave]));
-  else metaEl.append(link ? (c.enlace ? 'Abrir en la fuente oficial' : 'Buscar en internet') : 'Se agrega cuando tenga el PDF');
+  else metaEl.append(c.externo ? 'Gratis en la página oficial' : link ? (c.enlace ? 'Abrir en la fuente oficial' : 'Buscar en internet') : 'Se agrega cuando tenga el PDF');
   const abrirLink = () => { if (link) window.open(link, '_blank', 'noopener'); else aviso(editando() ? 'Toque la flecha para subir el PDF.' : 'Este documento se agregará pronto.'); };
   const btns = [];
   if (link) btns.push(el('button', { class: 'btn-icono', 'aria-label': c.enlace ? 'Abrir en la fuente' : 'Buscar en internet', onclick: abrirLink }, svg(c.enlace ? ICO.externo : ICO.lupa)));
-  if (editando()) btns.push(el('button', { class: 'btn-icono subir', disabled: !!E.ocupado[clave], 'aria-label': 'Subir el PDF de ' + c.titulo, onclick: () => elegirParaSubir(c.area, c.archivo, clave) }, svg(ICO.subir)));
+  if (editando() && !c.externo) btns.push(el('button', { class: 'btn-icono subir', disabled: !!E.ocupado[clave], 'aria-label': 'Subir el PDF de ' + c.titulo, onclick: () => elegirParaSubir(c.area, c.archivo, clave) }, svg(ICO.subir)));
   return el('div', { class: 'doc pendiente' },
     el('button', { class: 'abrir', onclick: abrirLink }, el('span', { class: 'titulo' }, c.titulo)),
     el('div', { class: 'doc-pie' },
