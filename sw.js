@@ -1,6 +1,6 @@
 // Biblioteca Virtual - service worker
 // Guarda la app para abrirla sin internet y sirve los PDF descargados.
-const APP_CACHE = 'bv-app-v2';
+const APP_CACHE = 'bv-app-v3';
 const DOCS_CACHE = 'bv-docs';
 const PDFJS = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
 const SHELL = [

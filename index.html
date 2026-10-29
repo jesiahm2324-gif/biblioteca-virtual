@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Biblioteca Virtual</title>
 <meta name="description" content="Leyes, códigos, normas y manuales para consultar en el teléfono, también sin internet.">
-<meta name="theme-color" content="#1D4ED8">
+<meta name="theme-color" content="#0B1226">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Biblioteca">
@@ -15,54 +17,87 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
 :root{
-  --azul:#1D4ED8; --azul-osc:#1E3A8A; --celeste:#DBEAFE; --amarillo:#FACC15;
-  --fondo:#F8FAFC; --tarjeta:#FFFFFF; --borde:#E2E8F0; --texto:#0F172A; --suave:#475569; --tenue:#64748B;
-  --peligro:#B91C1C; --ok:#047857; --sombra:0 1px 2px rgba(15,23,42,.06),0 4px 12px rgba(15,23,42,.05);
-  --lector:#E2E8F0;
-}
-@media (prefers-color-scheme: dark){
-  :root{
-    --azul:#60A5FA; --azul-osc:#BFDBFE; --celeste:#1E293B;
-    --fondo:#0B1120; --tarjeta:#111827; --borde:#1F2937; --texto:#F1F5F9; --suave:#CBD5E1; --tenue:#94A3B8;
-    --peligro:#F87171; --ok:#34D399; --sombra:none; --lector:#020617;
-  }
+  --azul:#1D4ED8; --azul-claro:#60A5FA; --amarillo:#FACC15; --tinta:#0B1226;
+  --fondo:#0B1226; --tarjeta:#121B36; --tarjeta2:#1A2547; --borde:#22305A; --texto:#EEF2FF; --suave:#C9D3F0; --tenue:#94A3C7;
+  --celeste:#1A2547; --peligro:#F87171; --ok:#34D399; --sombra:none; --lector:#020617;
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
-body{background:var(--fondo);color:var(--texto);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-text-size-adjust:100%}
+body{background:var(--fondo);color:var(--texto);font:16px/1.45 'Sora',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;-webkit-text-size-adjust:100%}
 button,input{font:inherit;color:inherit}
 button{cursor:pointer}
 .oculto{display:none !important}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 
 /* Encabezado */
-header{position:sticky;top:0;z-index:5;background:#1D4ED8;color:#fff;padding:calc(env(safe-area-inset-top) + 12px) 16px 12px}
-.marca{display:flex;align-items:center;gap:4px;max-width:720px;margin:0 auto}
-.marca img{width:32px;height:32px;margin-right:6px;flex:none;border-radius:8px;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
-.marca h1{font-size:19px;margin:0;font-weight:700;flex:1;min-width:0;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-header .btn-icono{width:38px;height:40px;flex:none}
-.btn-icono{width:44px;height:44px;border:0;border-radius:12px;background:transparent;display:inline-flex;align-items:center;justify-content:center}
-header .btn-icono{color:#fff}
-header .btn-icono:active{background:rgba(255,255,255,.15)}
-.buscador{max-width:720px;margin:12px auto 0;position:relative}
-.buscador input{width:100%;height:48px;border:0;border-radius:14px;padding:0 44px 0 44px;background:#fff;color:#0F172A;font-size:17px;outline:none}
-.buscador input:focus{box-shadow:0 0 0 3px var(--amarillo)}
-.buscador svg{position:absolute;left:14px;top:14px;color:#64748B}
-.buscador .limpiar{position:absolute;right:2px;top:2px;color:#64748B}
+header{padding:calc(env(safe-area-inset-top) + 18px) 16px 6px;max-width:720px;margin:0 auto}
+.marca{display:flex;align-items:center;gap:10px}
+.marca .logo{width:40px;height:40px;flex:none}
+.marca .nombre-app{flex:1;min-width:0;display:flex;flex-direction:column}
+.marca .saludo{font-size:12px;color:var(--tenue)}
+.marca h1{font-size:19px;margin:0;font-weight:700;letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btn-icono{width:44px;height:44px;border:0;border-radius:12px;background:transparent;display:inline-flex;align-items:center;justify-content:center;color:var(--texto)}
+header .btn-icono{border-radius:14px;border:1px solid var(--borde);background:var(--tarjeta);flex:none}
+header .btn-icono.activo{background:var(--amarillo);border-color:var(--amarillo);color:var(--tinta)}
+.buscador{margin:16px 0 0;position:relative;display:flex;align-items:center;height:54px;border-radius:27px;background:var(--tarjeta);border:1px solid var(--borde);padding:0 7px 0 16px;gap:8px}
+.buscador:focus-within{border-color:var(--amarillo)}
+.buscador svg.lupa{flex:none;color:var(--tenue)}
+.buscador input{flex:1;min-width:0;height:100%;border:0;background:transparent;color:var(--texto);font-size:16px;outline:none}
+.buscador input::placeholder{color:var(--tenue)}
+.buscador .limpiar{width:36px;height:36px;color:var(--tenue)}
+.buscador .ir{flex:none;height:40px;padding:0 16px;border:0;border-radius:20px;background:var(--amarillo);color:var(--tinta);font-weight:600;font-size:14px}
 
-/* Pestañas */
-.chips{display:flex;gap:8px;overflow-x:auto;padding:12px 16px;max-width:752px;margin:0 auto;scrollbar-width:none}
-.chips::-webkit-scrollbar{display:none}
-.chip{flex:none;height:40px;padding:0 16px;border-radius:999px;border:1px solid var(--borde);background:var(--tarjeta);color:var(--suave);font-size:15px;font-weight:600;white-space:nowrap}
-.chip[aria-pressed="true"]{background:var(--azul);border-color:var(--azul);color:#fff}
-@media (prefers-color-scheme: dark){.chip[aria-pressed="true"]{color:#0B1120}}
+/* Barra inferior */
+.barra-inf{position:fixed;left:0;right:0;bottom:0;z-index:8;background:rgba(11,18,38,.96);border-top:1px solid var(--borde);padding:6px 8px calc(env(safe-area-inset-bottom) + 6px);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));backdrop-filter:blur(8px)}
+.barra-inf button{border:0;background:none;color:var(--tenue);display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;min-height:50px;justify-content:center}
+.barra-inf button[aria-current="page"]{color:var(--amarillo);font-weight:600}
 
-main{max-width:720px;margin:0 auto;padding:0 16px calc(32px + env(safe-area-inset-bottom))}
+/* Inicio: seguir leyendo y bloques */
+.seguir{width:100%;border:0;border-radius:18px;padding:14px 14px 14px 16px;background:var(--tarjeta);display:flex;align-items:center;gap:14px;text-align:left;margin-top:16px}
+.seguir .info{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px}
+.seguir .eti{font-size:11px;font-weight:600;letter-spacing:1px;color:var(--tenue)}
+.seguir .tit{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seguir .avance{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--tenue)}
+.seguir .barra{flex:1;height:5px;border-radius:3px;background:var(--borde);overflow:hidden}
+.seguir .barra span{display:block;height:5px;background:var(--amarillo)}
+.seguir .play{width:44px;height:44px;border-radius:22px;background:var(--amarillo);color:var(--tinta);display:flex;align-items:center;justify-content:center;flex:none}
+.bloques{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.bloque{position:relative;overflow:hidden;min-height:96px;border:0;border-radius:20px;background:var(--tarjeta);padding:14px;display:flex;flex-direction:column;justify-content:space-between;gap:10px;text-align:left}
+.bloque:active{filter:brightness(1.15)}
+.bloque .franja{position:absolute;left:0;top:0;bottom:0;width:5px}
+.bloque .ico{width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center}
+.bloque .pie-b{display:flex;align-items:baseline;justify-content:space-between;gap:8px;width:100%}
+.bloque .nom{font-size:15px;font-weight:600}
+.bloque .cnt{font-size:12px;color:var(--tenue);white-space:nowrap}
+.bloque.grande{grid-column:span 2;min-height:104px;background:var(--azul);color:#fff}
+.bloque.grande .cnt,.bloque.grande .eti{color:#DBEAFE}
+.bloque.grande .eti{font-size:13px;font-weight:600}
+.bloque.grande .sub{font-size:20px;font-weight:700;line-height:1.2}
+.bloque.mis{background:transparent;border:1px dashed var(--borde);color:var(--tenue)}
+.novedad{display:flex;align-items:center;gap:10px;width:100%;border:0;background:var(--tarjeta);border-radius:14px;padding:12px 14px;text-align:left}
+.novedad .tag{flex:none;font-size:10px;font-weight:700;letter-spacing:.5px;padding:3px 7px;border-radius:6px;background:#14532D;color:#BBF7D0}
+.novedad .tag.act{background:#1E3A8A;color:#BFDBFE}
+.novedad .t{flex:1;min-width:0;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.novedad .f{font-size:12px;color:var(--tenue)}
+
+/* Pantalla de un área */
+.heroe{position:relative;overflow:hidden;margin:14px 0 4px;border-radius:22px;background:var(--tarjeta);padding:12px 12px 16px}
+.heroe .franja{position:absolute;left:0;top:0;bottom:0;width:6px}
+.heroe .fila{display:flex;align-items:center;gap:8px}
+.heroe .fila .btn-icono{background:var(--tarjeta2);border-radius:14px}
+.heroe .datos{display:flex;align-items:center;gap:14px;padding:10px 6px 0}
+.heroe .ico{width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;flex:none}
+.heroe h2{margin:0;font-size:25px;font-weight:700;letter-spacing:-.5px}
+.heroe .cnt{font-size:13px;color:var(--tenue)}
+h2.vista{font-size:24px;font-weight:700;letter-spacing:-.4px;margin:18px 4px 4px}
+p.explica{margin:0 4px 12px;color:var(--tenue);font-size:14px}
+
+main{max-width:720px;margin:0 auto;padding:0 16px calc(96px + env(safe-area-inset-bottom))}
 h2.seccion{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--tenue);margin:20px 4px 8px;font-weight:700}
 .lista{display:flex;flex-direction:column;gap:8px}
 
 /* Tarjeta de documento */
-.doc{display:flex;flex-direction:column;background:var(--tarjeta);border:1px solid var(--borde);border-radius:16px;box-shadow:var(--sombra);padding:4px 4px 2px}
+.doc{display:flex;flex-direction:column;background:var(--tarjeta);border:0;border-radius:18px;padding:6px 4px 2px}
 .doc .abrir{display:block;width:100%;text-align:left;background:none;border:0;padding:10px 12px 2px;border-radius:12px}
 .doc .abrir:active{background:var(--celeste)}
 .pdf-ico{flex:none;width:40px;height:48px;border-radius:8px;background:var(--celeste);color:var(--azul);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;letter-spacing:.04em}
@@ -70,26 +105,26 @@ h2.seccion{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:va
 .doc .titulo{display:block;font-weight:600;font-size:17px;line-height:1.35;overflow-wrap:anywhere}
 .doc-pie{display:flex;align-items:center;gap:4px;min-height:44px}
 .meta-btn{flex:1;min-width:0;display:flex;align-items:center;gap:8px;background:none;border:0;padding:0 0 0 12px;text-align:left;align-self:stretch}
-.tipo{flex:none;font-size:10px;font-weight:800;letter-spacing:.05em;color:var(--azul);background:var(--celeste);border-radius:6px;padding:3px 6px}
+.tipo{flex:none;font-size:10px;font-weight:700;letter-spacing:.05em;color:var(--tinta);background:var(--amarillo);border-radius:6px;padding:3px 6px}
 .tipo.web{background:transparent;border:1px dashed var(--borde);color:var(--tenue)}
 .acciones{display:flex;flex:none}
 .doc .meta{font-size:13px;color:var(--tenue);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .doc .meta .ok{color:var(--ok);font-weight:600}
-.doc .meta .nuevo{color:var(--azul);font-weight:600}
+.doc .meta .nuevo{color:var(--azul-claro);font-weight:600}
 .doc .btn-icono{color:var(--tenue)}
-.doc .btn-icono[aria-pressed="true"]{color:#CA8A04}
+.doc .btn-icono[aria-pressed="true"]{color:var(--amarillo)}
 .doc .btn-icono.bajado{color:var(--ok)}
 .doc .btn-icono:active{background:var(--celeste)}
 .doc .btn-icono:disabled{opacity:.5}
 
 header .btn-icono.activo{background:#FACC15;color:#0F172A}
-body.editando main::before{content:'Modo edición · toque ✎ arriba para terminar';display:block;margin:12px 0 0;padding:8px 12px;border-radius:12px;background:#FEF9C3;color:#713F12;font-size:14px;font-weight:600;text-align:center}
+body.editando main::before{content:'Modo edición · toque ✎ arriba para terminar';display:block;margin:12px 0 0;padding:8px 12px;border-radius:12px;background:var(--amarillo);color:var(--tinta);font-size:14px;font-weight:600;text-align:center}
 #hoja{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center}
 .hoja-fondo{position:absolute;inset:0;background:rgba(2,6,23,.55)}
 .hoja-caja{position:relative;width:100%;max-width:560px;background:var(--tarjeta);border-radius:20px 20px 0 0;padding:12px 12px calc(12px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:6px;max-height:80vh;overflow:auto}
 .hoja-titulo{font-size:14px;color:var(--tenue);font-weight:600;text-align:center;padding:6px 12px 10px;border-bottom:1px solid var(--borde)}
 #hojaOpciones{display:flex;flex-direction:column;gap:6px;padding-top:6px}
-.hoja-op{min-height:52px;border:0;border-radius:14px;background:var(--fondo);font-size:17px;font-weight:600;color:var(--azul)}
+.hoja-op{min-height:52px;border:0;border-radius:14px;background:var(--fondo);font-size:17px;font-weight:600;color:var(--azul-claro)}
 .hoja-op:active{background:var(--celeste)}
 .hoja-op.peligro{color:var(--peligro)}
 .hoja-op.cancelar{color:var(--texto);margin-top:4px}
@@ -107,7 +142,7 @@ body.editando main::before{content:'Modo edición · toque ✎ arriba para termi
 .grupo-cuerpo .fila-accion{margin:4px 0 8px}
 .doc.pendiente{background:transparent;box-shadow:none;border-style:dashed}
 .pdf-ico.web{background:transparent;border:1.5px dashed var(--borde);color:var(--tenue);font-size:10px}
-.doc .btn-icono.subir{color:var(--azul)}
+.doc .btn-icono.subir{color:var(--amarillo)}
 h3.subseccion{font-size:13px;color:var(--tenue);font-weight:600;margin:14px 4px 8px}
 .panel{background:var(--tarjeta);border:1px solid var(--borde);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
 .panel p{margin:0;color:var(--suave);font-size:15px}
@@ -121,17 +156,16 @@ h3.subseccion{font-size:13px;color:var(--tenue);font-weight:600;margin:14px 4px 
 .vacio{text-align:center;color:var(--suave);padding:40px 16px}
 .vacio strong{display:block;color:var(--texto);font-size:18px;margin-bottom:6px}
 .vacio code{background:var(--celeste);padding:2px 6px;border-radius:6px;font-size:14px}
-.btn{height:48px;padding:0 20px;border-radius:14px;border:0;background:var(--azul);color:#fff;font-weight:700;font-size:16px;display:inline-flex;align-items:center;gap:8px}
-@media (prefers-color-scheme: dark){.btn{color:#0B1120}}
-.btn.sec{background:var(--tarjeta);color:var(--azul);border:1px solid var(--borde)}
+.btn{height:48px;padding:0 20px;border-radius:24px;border:0;background:var(--amarillo);color:var(--tinta);font-weight:700;font-size:15px;display:inline-flex;align-items:center;gap:8px}
+.btn.sec{background:var(--tarjeta);color:var(--texto);border:1px solid var(--borde)}
 .fila-accion{display:flex;justify-content:center;margin:12px 0 4px}
 
 /* Resultados dentro del texto */
-.hit{display:block;width:100%;text-align:left;background:var(--tarjeta);border:1px solid var(--borde);border-radius:14px;padding:12px 14px}
+.hit{display:block;width:100%;text-align:left;background:var(--tarjeta);border:0;border-radius:16px;padding:12px 14px}
 .hit:active{background:var(--celeste)}
 .hit .de{font-size:13px;color:var(--tenue);font-weight:600}
 .hit .frag{font-size:15px;margin-top:4px;color:var(--suave)}
-.hit mark{background:#FEF08A;color:#0F172A;border-radius:3px;padding:0 1px}
+.hit mark{background:var(--amarillo);color:var(--tinta);border-radius:3px;padding:0 1px}
 .nota{font-size:13px;color:var(--tenue);margin:8px 4px}
 
 .aviso{max-width:720px;margin:12px auto 0;padding:0 16px}
@@ -156,35 +190,33 @@ input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none;display
 .pie .pag{min-width:110px;height:40px;border:1px solid var(--borde);border-radius:10px;background:var(--fondo);font-size:15px;font-weight:600}
 .cargando{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--suave);font-size:15px}
 
-#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#0F172A;color:#fff;padding:12px 16px;border-radius:12px;font-size:15px;z-index:40;max-width:calc(100% - 32px);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+#toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#EEF2FF;color:#0B1226 !important;color:#fff;padding:12px 16px;border-radius:12px;font-size:15px;z-index:40;max-width:calc(100% - 32px);box-shadow:0 8px 24px rgba(0,0,0,.25)}
 </style>
 </head>
 <body>
 
 <header>
   <div class="marca">
-    <img src="icon-192.png" alt="">
-    <h1>Biblioteca Virtual</h1>
+    <svg class="logo" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="24" fill="#1D4ED8"/><rect x="20" y="30" width="10" height="46.5" rx="2" fill="#FFFFFF"/><rect x="33" y="24" width="10" height="52.5" rx="2" fill="#BFDBFE"/><rect x="46" y="34" width="10" height="42.5" rx="2" fill="#FFFFFF"/><rect x="59" y="32.5" width="10" height="44" rx="2" fill="#BFDBFE" transform="rotate(14 59 76.5)"/><path d="M16 78 H84" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/><circle cx="73" cy="38" r="9" fill="#1D4ED8" stroke="#FACC15" stroke-width="4"/><path d="M79.5 44.5 L86 51" stroke="#FACC15" stroke-width="4.5" stroke-linecap="round"/></svg>
+    <div class="nombre-app"><span class="saludo" id="saludo">Bienvenido</span><h1>Biblioteca Virtual</h1></div>
     <button class="btn-icono oculto" id="btnInstalar" aria-label="Instalar la app">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
     </button>
     <button class="btn-icono oculto" id="btnEditar" aria-label="Modo edición" aria-pressed="false">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4"/></svg>
     </button>
     <button class="btn-icono" id="btnAjustes" aria-label="Compartir y ajustes">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6"/></svg>
-    </button>
-    <button class="btn-icono" id="btnRecargar" aria-label="Actualizar la lista">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36L21 8M21 3v5h-5"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6"/></svg>
     </button>
   </div>
-  <form class="buscador" role="search" onsubmit="return false">
+  <form class="buscador" role="search" id="formBuscar">
     <label for="q" class="sr">Buscar en la biblioteca</label>
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
-    <input id="q" type="search" placeholder="Buscar ley, artículo o palabra" autocomplete="off" enterkeyhint="search">
+    <svg class="lupa" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+    <input id="q" type="search" placeholder="Ley, artículo o palabra" autocomplete="off" enterkeyhint="search">
     <button type="button" class="btn-icono limpiar oculto" id="btnLimpiar" aria-label="Borrar búsqueda">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
     </button>
+    <button type="submit" class="ir">Buscar</button>
   </form>
 </header>
 
@@ -193,8 +225,8 @@ input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none;display
   <button class="btn-icono" id="cerrarAviso" aria-label="Cerrar aviso"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
 </div></div>
 
-<nav class="chips" id="chips" aria-label="Áreas"></nav>
 <main id="contenido" aria-live="polite"></main>
+<nav class="barra-inf" id="barraInf" aria-label="Secciones"></nav>
 
 <section id="lector" class="oculto" aria-label="Lector de documento">
   <div class="barra">
@@ -400,7 +432,9 @@ const E = {
   q: '',
   favs: new Set(leer('bv-favs', [])),
   abiertas: new Set(leer('bv-abiertas', [])),
-  editar: false,                    // modo edición (solo administrador)  // áreas desplegadas en la pantalla principal
+  editar: false,                     // modo edición (solo administrador)
+  indice: new Map(),                 // ruta -> {pages, plegadas}: texto de todos los PDF, preparado en GitHub
+  novedades: leer('bv-novedades', []),
   bajados: leer('bv-bajados', {}),   // id -> sha descargado
   ultimo: leer('bv-ultimo', {}),     // id -> {p, t}
   textos: new Map(),                 // id -> {pages, plegadas}
@@ -487,17 +521,73 @@ async function cargarTextos() {
   } catch (e) {}
 }
 
-/* ================= Pestañas ================= */
+/* ================= Áreas: color e ícono ================= */
+const AREA_INFO = {
+  codigos: { color: '#60A5FA', tinte: '#16264A', sub: 'Penal, Civil, Familia, Comercio y más', icono: 'M4 19V5M9 19V5M14 19l3-14 3 1-3 13' },
+  laboral: { color: '#FACC15', tinte: '#2A2A1E', icono: 'M4 8h16v11H4zM9 8V5h6v3' },
+  portuario: { color: '#22D3EE', tinte: '#132E3E', icono: 'M12 3v15M8 7h8M5 13c0 4 3 7 7 7s7-3 7-7' },
+  pecuario: { color: '#FB923C', tinte: '#2E2224', icono: 'M5 20c0-6 3-11 7-14 4 3 7 8 7 14M12 6v14' },
+  espiritual: { color: '#C4B5FD', tinte: '#252545', icono: 'M12 3v18M7 8h10' },
+  financiera: { color: '#F472B6', tinte: '#2E1F3A', icono: 'M4 19h16M7 16V10M12 16V6M17 16v-4' }
+};
+const infoArea = (a) => AREA_INFO[a] || { color: '#94A3C7', tinte: '#1A2547', icono: 'M6 3h9l4 4v14H6zM14 3v5h5' };
 function areasPresentes() {
   const s = new Set(E.docs.map((d) => d.area));
   const extra = [...s].filter((a) => !ORDEN.includes(a) && a !== 'otros').sort();
   return ORDEN.concat(extra, s.has('otros') ? ['otros'] : []);
 }
-function pintarChips() {
-  const tabs = [['todos', 'Todos']].concat(areasPresentes().map((a) => [a, etiquetaArea(a)]), [['favoritos', 'Favoritos'], ['descargados', 'En el teléfono'], ['mis', 'Mis documentos']]);
-  const nav = $('chips'); nav.textContent = '';
-  for (const [k, txt] of tabs) nav.append(el('button', { class: 'chip', 'aria-pressed': String(E.pestana === k), onclick: () => { E.pestana = k; pintar(); window.scrollTo(0, 0); } }, txt));
+const PESTANAS = [
+  ['todos', 'Inicio', 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z'],
+  ['favoritos', 'Favoritos', ICO.estrella],
+  ['descargados', 'Guardados', 'M12 4v11M7 10l5 5 5-5M5 20h14'],
+  ['recientes', 'Recientes', 'M12 8v4l3 2M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z']
+];
+function irA_pestana(k) { E.pestana = k; $('q').value = ''; E.q = ''; $('btnLimpiar').classList.add('oculto'); pintar(); window.scrollTo(0, 0); }
+function pintarBarra() {
+  const nav = $('barraInf'); nav.textContent = '';
+  const activa = ORDEN.includes(E.pestana) || E.pestana === 'otros' || E.pestana === 'mis' ? 'todos' : E.pestana;
+  for (const [k, txt, ico] of PESTANAS) nav.append(el('button', { 'aria-current': activa === k && !E.q ? 'page' : null, onclick: () => irA_pestana(k) }, svg(ico), txt));
 }
+function saludo() {
+  const h = new Date().getHours();
+  $('saludo').textContent = h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches';
+}
+
+/* ================= Novedades ================= */
+const novedadDe = (d) => d.path && E.novedades.find((n) => n.ruta === d.path && (Date.now() - Date.parse(n.fecha)) < 30 * 864e5);
+const fechaCorta = (iso) => { const [y, m, dd] = iso.split('-'); return Number(dd) + '/' + Number(m); };
+async function cargarNovedades() {
+  if (!navigator.onLine) return;
+  try {
+    const r = await fetch(urlArchivo('novedades.json'), { cache: 'no-store' });
+    if (r.ok) { E.novedades = await r.json(); guardar('bv-novedades', E.novedades); pintar(); }
+  } catch (e) {}
+}
+
+/* ================= Índice de búsqueda (preparado en GitHub) ================= */
+const INDICE_CACHE = 'bv-indice';
+function usarIndice(datos) {
+  const m = new Map();
+  for (const ruta in datos) m.set(ruta, { pages: datos[ruta].paginas, plegadas: datos[ruta].paginas.map(plegar) });
+  E.indice = m;
+  if (E.q.trim()) pintar();
+}
+async function cargarIndice() {
+  const url = urlArchivo('indice/textos.json');
+  try {
+    const c = await caches.open(INDICE_CACHE);
+    const hit = await c.match('indice');
+    if (hit && !E.indice.size) usarIndice(await hit.json());
+    if (!navigator.onLine) return;
+    const r = await fetch(url, { cache: 'no-store' });
+    if (!r.ok) return;
+    const texto = await r.text();
+    await c.put('indice', new Response(texto, { headers: { 'Content-Type': 'application/json' } }));
+    usarIndice(JSON.parse(texto));
+  } catch (e) {}
+}
+// Texto de un documento: el del teléfono si está guardado; si no, el del índice de GitHub.
+const textoDe = (d) => E.textos.get(d.id) || (d.path && E.indice.get(d.path)) || null;
 
 /* ================= Tarjetas ================= */
 function tarjeta(d) {
@@ -505,117 +595,133 @@ function tarjeta(d) {
   const bajado = d.local || d.id in E.bajados;
   const nuevo = !d.local && bajado && E.bajados[d.id] && d.sha && E.bajados[d.id] !== d.sha;
   const u = E.ultimo[d.id];
+  const nov = novedadDe(d);
   const meta = [];
-  if (!E.enGrupo && (E.pestana === 'todos' || E.q || E.pestana === 'favoritos' || E.pestana === 'descargados')) meta.push(etiquetaArea(d.area));
+  if (!E.enArea && !d.local) meta.push(etiquetaArea(d.area));
   if (d.size) meta.push(mb(d.size));
   if (u) meta.push('pág. ' + u.p);
   const metaEl = el('div', { class: 'meta' }, meta.join(' · '));
   if (E.ocupado[d.id]) metaEl.append(' · ', el('span', { class: 'nuevo' }, E.ocupado[d.id]));
   else if (nuevo) metaEl.append(' · ', el('span', { class: 'nuevo' }, 'Hay versión nueva'));
-  else if (bajado && !d.local) metaEl.append(' · ', el('span', { class: 'ok' }, 'En el teléfono'));
+  else if (nov) metaEl.append(' · ', el('span', { class: 'nuevo' }, (nov.tipo === 'nuevo' ? 'Nuevo ' : 'Actualizado ') + fechaCorta(nov.fecha)));
+  else if (bajado && !d.local) metaEl.append(' · ', el('span', { class: 'ok' }, 'Guardado'));
 
   const btnFav = el('button', { class: 'btn-icono', 'aria-pressed': String(fav), 'aria-label': fav ? 'Quitar de favoritos' : 'Agregar a favoritos', onclick: () => alternarFav(d.id) }, svg(ICO.estrella, { fill: fav }));
   let btn2;
   if (d.local) btn2 = el('button', { class: 'btn-icono', 'aria-label': 'Eliminar del teléfono', onclick: () => eliminarLocal(d) }, svg(ICO.borrar));
   else btn2 = el('button', {
     class: 'btn-icono' + (bajado && !nuevo ? ' bajado' : ''), disabled: !!E.ocupado[d.id],
-    'aria-label': bajado && !nuevo ? 'Quitar del teléfono' : 'Guardar en el teléfono para leer sin internet',
+    'aria-label': bajado && !nuevo ? 'Quitar de Guardados' : 'Guardar para leer sin internet',
     onclick: () => (bajado && !nuevo ? quitarDescarga(d) : descargar(d))
   }, svg(bajado && !nuevo ? ICO.bajado : ICO.bajar));
 
-  // El nombre ocupa todo el ancho; los botones van en una fila debajo.
   return el('div', { class: 'doc' },
     el('button', { class: 'abrir', onclick: () => abrir(d) }, el('span', { class: 'titulo' }, d.titulo)),
     el('div', { class: 'doc-pie' },
       el('button', { class: 'meta-btn', onclick: () => abrir(d), tabindex: '-1', 'aria-hidden': 'true' }, el('span', { class: 'tipo' }, 'PDF'), metaEl),
       el('div', { class: 'acciones' }, btnFav, btn2,
-        editando() && d.path ? el('button', { class: 'btn-icono mas', disabled: !!E.ocupado[d.id], 'aria-label': 'Más opciones: mover o eliminar', onclick: () => opcionesDoc(d) }, svg(ICO.mas, { fill: true })) : null)));
+        editando() && d.path ? el('button', { class: 'btn-icono mas', disabled: !!E.ocupado[d.id], 'aria-label': 'Más opciones: cambiar nombre, mover o eliminar', onclick: () => opcionesDoc(d) }, svg(ICO.mas, { fill: true })) : null)));
 }
 const ordenar = (arr) => arr.slice().sort((a, b) => a.titulo.localeCompare(b.titulo, 'es', { numeric: true }));
 function vacio(titulo, ...texto) { return el('div', { class: 'vacio' }, el('strong', null, titulo), ...texto); }
+const lista = (arr, f) => el('div', { class: 'lista' }, arr.map(f || tarjeta));
+const titulo2 = (t, explica) => [el('h2', { class: 'vista' }, t), explica ? el('p', { class: 'explica' }, explica) : null];
 
-/* ================= Pantalla principal ================= */
+/* ================= Pantallas ================= */
 function pintar() {
-  pintarChips();
+  pintarBarra(); saludo();
   const be = $('btnEditar'); be.classList.toggle('oculto', !esAdmin()); be.setAttribute('aria-pressed', String(editando())); be.classList.toggle('activo', editando());
   document.body.classList.toggle('editando', editando());
+  E.enArea = false;
   const m = $('contenido'); m.textContent = '';
   if (E.q.trim()) return pintarBusqueda(m);
   const p = E.pestana;
+  const recientesDocs = () => Object.entries(E.ultimo).sort((a, b) => b[1].t - a[1].t).map(([id]) => porId(id)).filter(Boolean);
 
-  if (p === 'mis') {
-    m.append(el('div', { class: 'fila-accion' }, el('button', { class: 'btn', onclick: () => $('archivo').click() }, svg('M12 5v14M5 12h14'), 'Agregar PDF del teléfono')));
-    m.append(el('p', { class: 'nota' }, 'Estos archivos se guardan solo en este teléfono y no se publican. Úselo para libros y manuales con derechos de autor.'));
-    if (!E.locales.length) m.append(vacio('Aún no hay documentos propios'));
-    else m.append(el('div', { class: 'lista' }, E.locales.map(tarjeta)));
-    return;
-  }
+  if (p === 'ajustes') { m.append(...titulo2('Compartir y ajustes')); return pintarAjustes(m); }
   if (p === 'favoritos') {
     const arr = ordenar(todos().filter((d) => E.favs.has(d.id)));
-    m.append(arr.length ? el('div', { class: 'lista', style: 'margin-top:4px' }, arr.map(tarjeta)) : vacio('Sin favoritos', 'Toque la estrella de un documento para tenerlo aquí.'));
+    m.append(...titulo2('Favoritos', 'Sus documentos de consulta frecuente.'), arr.length ? lista(arr) : vacio('Sin favoritos', 'Toque la estrella ☆ de un documento para tenerlo aquí.'));
     return;
   }
   if (p === 'descargados') {
     const arr = ordenar(todos().filter((d) => d.local || d.id in E.bajados));
-    m.append(arr.length ? el('div', { class: 'lista', style: 'margin-top:4px' }, arr.map(tarjeta)) : vacio('Nada guardado todavía', 'Toque la flecha de un documento para poder leerlo sin internet.'));
+    m.append(...titulo2('Guardados', 'Documentos guardados en este teléfono para leerlos sin internet. Para buscar no hace falta guardarlos.'), arr.length ? lista(arr) : vacio('Nada guardado todavía', 'Toque la flecha ↓ de un documento para leerlo sin señal.'));
+    return;
+  }
+  if (p === 'recientes') {
+    const arr = recientesDocs().slice(0, 20);
+    m.append(...titulo2('Recientes', 'Lo último que abrió, con la página donde quedó.'), arr.length ? lista(arr) : vacio('Aún no ha leído nada', 'Los documentos que abra aparecerán aquí.'));
+    return;
+  }
+  if (p === 'mis') {
+    m.append(...titulo2('Mis documentos', 'Archivos que solo están en este teléfono. Úselo para libros y manuales con derechos de autor.'));
+    m.append(el('div', { class: 'fila-accion' }, el('button', { class: 'btn', onclick: () => $('archivo').click() }, svg('M12 5v14M5 12h14'), 'Agregar PDF del teléfono')));
+    m.append(E.locales.length ? lista(E.locales) : vacio('Aún no hay documentos propios'));
     return;
   }
 
-  if (p === 'ajustes') return pintarAjustes(m);
-
-  // Estado de la lista del repositorio
   if (E.estadoRepo === 'cargando' && !E.docs.length) m.append(el('p', { class: 'nota' }, 'Cargando la biblioteca…'));
   if (E.estadoRepo === 'error' && !E.docs.length) m.append(el('div', { class: 'aviso-error' }, el('p', null, 'No se pudo cargar la lista: ' + E.errorRepo), el('button', { class: 'btn sec', onclick: () => cargarRepo(true) }, 'Reintentar')));
-
   const pend = pendientes();
-  const cuenta = (a) => { const l = E.docs.filter((d) => d.area === a).length; return { listos: l, total: l + pend.filter((c) => c.area === a).length }; };
-  const seccionArea = (a, dest) => {
-    const listos = ordenar(E.docs.filter((d) => d.area === a));
-    const faltan = pend.filter((c) => c.area === a);
-    if (listos.length) dest.append(el('div', { class: 'lista' }, listos.map(tarjeta)));
-    if (faltan.length) {
-      dest.append(el('h3', { class: 'subseccion' }, 'Por agregar · se abren en internet'));
-      dest.append(el('div', { class: 'lista' }, faltan.map(tarjetaPendiente)));
-    }
-    return listos.length + faltan.length;
-  };
-  const botonSubir = (a) => el('div', { class: 'fila-accion' }, el('button', { class: 'btn sec', onclick: () => elegirParaSubir(a) }, svg(ICO.subir), 'Subir PDF a ' + etiquetaArea(a)));
+  const cuenta = (a) => { const l = E.docs.filter((d) => d.area === a).length, t = l + pend.filter((c) => c.area === a).length; return { l, t }; };
+  const textoCuenta = (a) => { const { l, t } = cuenta(a); return !t ? 'Vacía' : l === t ? String(l) : l + ' de ' + t; };
 
   if (p === 'todos') {
-    // Pantalla principal compacta: cada área es una fila que se abre y se cierra.
-    const favoritos = ordenar(todos().filter((d) => E.favs.has(d.id)));
-    if (favoritos.length) m.append(el('h2', { class: 'seccion' }, '★ Favoritos'), el('div', { class: 'lista' }, favoritos.map(tarjeta)));
-    const recientes = Object.entries(E.ultimo).sort((a, b) => b[1].t - a[1].t).map(([id]) => porId(id)).filter((d) => d && !E.favs.has(d.id)).slice(0, 2);
-    if (recientes.length) m.append(el('h2', { class: 'seccion' }, 'Seguir leyendo'), el('div', { class: 'lista' }, recientes.map(tarjeta)));
-    m.append(el('h2', { class: 'seccion' }, 'Áreas'));
-    const grupos = el('div', { class: 'grupos' });
-    m.append(grupos);
-    for (const a of areasPresentes()) {
-      const { listos, total } = cuenta(a);
-      const abierto = E.abiertas.has(a);
-      const cuerpo = el('div', { class: 'grupo-cuerpo', id: 'grupo-' + a });
-      const cab = el('button', { class: 'grupo-cab', 'aria-expanded': String(abierto), 'aria-controls': 'grupo-' + a, onclick: () => {
-        E.abiertas.has(a) ? E.abiertas.delete(a) : E.abiertas.add(a);
-        guardar('bv-abiertas', [...E.abiertas]); pintar();
-      } },
-        el('span', { class: 'grupo-nombre' }, etiquetaArea(a)),
-        el('span', { class: 'grupo-cuenta' }, total ? listos + ' de ' + total : 'Vacía'),
-        svg('M9 6l6 6-6 6'));
-      const g = el('section', { class: 'grupo' + (abierto ? ' abierto' : '') }, cab);
-      if (abierto) {
-        if (editando() && ORDEN.includes(a)) cuerpo.append(botonSubir(a));
-        E.enGrupo = true; const n = seccionArea(a, cuerpo); E.enGrupo = false;
-        if (!n) cuerpo.append(el('p', { class: 'nota' }, editando() ? 'Aún no hay documentos.' : 'Pronto se agregarán documentos en esta sección.'));
-        g.append(cuerpo);
-      }
-      grupos.append(g);
+    const ult = recientesDocs()[0];
+    if (ult) {
+      const pos = E.ultimo[ult.id].p, tot = E.ultimo[ult.id].n;
+      m.append(el('button', { class: 'seguir', onclick: () => abrir(ult) },
+        el('span', { class: 'info' }, el('span', { class: 'eti' }, 'SEGUIR LEYENDO'), el('span', { class: 'tit' }, ult.titulo),
+          el('span', { class: 'avance' }, el('span', { class: 'barra' }, el('span', { style: 'width:' + (tot ? Math.max(3, Math.round(pos / tot * 100)) : 4) + '%' })), 'pág. ' + pos + (tot ? ' de ' + tot : ''))),
+        el('span', { class: 'play', 'aria-hidden': 'true' }, svg('M8 5v14l11-7z', { fill: true }))));
     }
+    const novs = E.novedades.filter((n) => (Date.now() - Date.parse(n.fecha)) < 30 * 864e5).map((n) => ({ n, d: E.docs.find((x) => x.path === n.ruta) })).filter((x) => x.d).slice(0, 3);
+    if (novs.length) {
+      m.append(el('h2', { class: 'seccion' }, 'Novedades'));
+      m.append(el('div', { class: 'lista' }, novs.map(({ n, d }) => el('button', { class: 'novedad', onclick: () => abrir(d) },
+        el('span', { class: 'tag' + (n.tipo === 'nuevo' ? '' : ' act') }, n.tipo === 'nuevo' ? 'NUEVO' : 'ACTUALIZADO'), el('span', { class: 't' }, d.titulo), el('span', { class: 'f' }, fechaCorta(n.fecha))))));
+    }
+    m.append(el('h2', { class: 'seccion' }, 'Áreas · ' + E.docs.length + ' documentos'));
+    if (editando()) m.append(el('div', { class: 'fila-accion' }, el('button', { class: 'btn', onclick: () => elegirParaSubir(null) }, svg(ICO.subir), 'Subir PDF')));
+    const grid = el('div', { class: 'bloques' });
+    areasPresentes().forEach((a, i) => {
+      const inf = infoArea(a);
+      if (i === 0 && inf.sub) {
+        grid.append(el('button', { class: 'bloque grande', onclick: () => irA_pestana(a) },
+          el('span', { class: 'pie-b' }, el('span', { class: 'eti' }, etiquetaArea(a)), el('span', { class: 'cnt' }, textoCuenta(a) + ' documentos')),
+          el('span', { class: 'sub' }, inf.sub)));
+        return;
+      }
+      grid.append(el('button', { class: 'bloque', onclick: () => irA_pestana(a) },
+        el('span', { class: 'franja', style: 'background:' + inf.color }),
+        el('span', { class: 'ico', style: 'background:' + inf.tinte + ';color:' + inf.color }, svg(inf.icono)),
+        el('span', { class: 'pie-b' }, el('span', { class: 'nom' }, etiquetaArea(a)), el('span', { class: 'cnt' }, textoCuenta(a)))));
+    });
+    grid.append(el('button', { class: 'bloque mis', onclick: () => irA_pestana('mis') },
+      el('span', { class: 'ico', style: 'background:var(--tarjeta)' }, svg('M6 3h9l4 4v14H6zM14 3v5h5')),
+      el('span', { class: 'pie-b' }, el('span', { class: 'nom' }, 'Mis documentos'), el('span', { class: 'cnt' }, E.locales.length ? String(E.locales.length) : ''))));
+    m.append(grid);
     return;
   }
-  if (editando() && ORDEN.includes(p)) m.append(botonSubir(p));
-  const caja = el('div');
-  m.append(caja);
-  if (!seccionArea(p, caja)) m.append(vacio('Sin documentos en ' + etiquetaArea(p), editando() ? '' : 'Pronto se agregarán documentos en esta sección.'));
+
+  // Pantalla de un área
+  const inf = infoArea(p);
+  const { l, t } = cuenta(p);
+  m.append(el('section', { class: 'heroe' },
+    el('span', { class: 'franja', style: 'background:' + inf.color }),
+    el('div', { class: 'fila' }, el('button', { class: 'btn-icono', 'aria-label': 'Volver al inicio', onclick: () => irA_pestana('todos') }, svg('M15 18l-6-6 6-6'))),
+    el('div', { class: 'datos' },
+      el('span', { class: 'ico', style: 'background:' + inf.tinte + ';color:' + inf.color }, svg(inf.icono)),
+      el('div', null, el('h2', null, etiquetaArea(p)), el('div', { class: 'cnt' }, l + ' en la app' + (t > l ? ' · ' + (t - l) + ' por agregar' : ''))))));
+  if (editando() && ORDEN.includes(p)) m.append(el('div', { class: 'fila-accion' }, el('button', { class: 'btn', onclick: () => elegirParaSubir(p) }, svg(ICO.subir), 'Subir PDF a ' + etiquetaArea(p))));
+  E.enArea = true;
+  const listos = ordenar(E.docs.filter((d) => d.area === p));
+  const faltan = pend.filter((c) => c.area === p);
+  if (listos.length) m.append(lista(listos));
+  if (faltan.length) m.append(el('h3', { class: 'subseccion' }, 'Por agregar · se abren en internet'), lista(faltan, tarjetaPendiente));
+  E.enArea = false;
+  if (!listos.length && !faltan.length) m.append(vacio('Sin documentos en ' + etiquetaArea(p), editando() ? '' : 'Pronto se agregarán documentos en esta sección.'));
 }
 
 /* ================= Documento por agregar ================= */
@@ -623,7 +729,7 @@ function tarjetaPendiente(c) {
   const link = enlaceDe(c);
   const clave = 'cat:' + c.area + '/' + c.archivo;
   const metaEl = el('div', { class: 'meta' });
-  if (E.pestana === 'todos' && !E.q) { /* el área ya está en el título de la sección */ } else metaEl.append(etiquetaArea(c.area) + ' · ');
+  if (!E.enArea) metaEl.append(etiquetaArea(c.area) + ' · ');
   if (E.ocupado[clave]) metaEl.append(el('span', { class: 'nuevo' }, E.ocupado[clave]));
   else metaEl.append(link ? (c.enlace ? 'Abrir en la fuente oficial' : 'Buscar en internet') : 'Se agrega cuando tenga el PDF');
   const abrirLink = () => { if (link) window.open(link, '_blank', 'noopener'); else aviso(editando() ? 'Toque la flecha para subir el PDF.' : 'Este documento se agregará pronto.'); };
@@ -652,6 +758,10 @@ function pintarAjustes(m) {
     el('p', null, 'Envíe este enlace por WhatsApp o correo. Quien lo abra en Safari o Chrome puede instalar la app con ', el('strong', null, 'Agregar a inicio'), '.'),
     el('p', { class: 'url' }, URL_APP()),
     el('button', { class: 'btn', onclick: compartir }, svg(ICO.compartir), 'Compartir la app')));
+  m.append(el('h2', { class: 'seccion' }, 'Biblioteca'));
+  m.append(el('div', { class: 'panel' },
+    el('p', null, 'La lista, la búsqueda y las novedades se actualizan solas al abrir la app. Si acaba de subir algo, puede forzarlo aquí.'),
+    el('button', { class: 'btn sec', onclick: () => { cargarRepo(true); cargarIndice(); cargarNovedades(); } }, 'Actualizar ahora')));
 
   m.append(el('h2', { class: 'seccion' }, 'Administrar la biblioteca'));
   const panel = el('div', { class: 'panel' });
@@ -845,25 +955,38 @@ function pintarBusqueda(m) {
   const q = plegar(E.q.trim().replace(/\s+/g, ' '));
   const palabras = q.split(' ');
   const enTitulo = ordenar(todos().filter((d) => { const t = plegar(d.titulo + ' ' + etiquetaArea(d.area)); return palabras.every((w) => t.includes(w)); }));
+  m.append(el('h2', { class: 'vista' }, 'Resultados'));
   if (enTitulo.length) m.append(el('h2', { class: 'seccion' }, 'Documentos · ' + enTitulo.length), el('div', { class: 'lista' }, enTitulo.map(tarjeta)));
   const pendTitulo = pendientes().filter((c) => { const t = plegar(c.titulo + ' ' + etiquetaArea(c.area)); return palabras.every((w) => t.includes(w)); });
   if (pendTitulo.length) m.append(el('h2', { class: 'seccion' }, 'Por agregar · ' + pendTitulo.length), el('div', { class: 'lista' }, pendTitulo.map(tarjetaPendiente)));
 
-  const hits = []; let total = 0;
-  for (const [id, tx] of E.textos) {
-    const d = porId(id); if (!d) continue;
+  // Primero las leyes y códigos; luego libros y documentos propios. Hasta 3 pasajes por documento.
+  const prioridad = (d) => { const i = ['codigos', 'laboral', 'portuario', 'pecuario'].indexOf(d.area); return i < 0 ? 9 : i; };
+  const orden = todos().slice().sort((a, b) => prioridad(a) - prioridad(b) || a.titulo.localeCompare(b.titulo, 'es', { numeric: true }));
+  const grupos = []; let total = 0;
+  for (const d of orden) {
+    const tx = textoDe(d); if (!tx) continue;
+    const h = []; let n = 0;
     tx.plegadas.forEach((pg, k) => {
       let i = pg.indexOf(q);
-      while (i !== -1) { total++; if (hits.length < 80) hits.push({ d, p: k + 1, frag: fragmento(tx.pages[k], pg, i, q.length) }); i = pg.indexOf(q, i + q.length); }
+      while (i !== -1) { n++; if (h.length < 3) h.push({ p: k + 1, frag: fragmento(tx.pages[k], pg, i, q.length) }); i = pg.indexOf(q, i + q.length); }
     });
+    if (n) { grupos.push({ d, h, n }); total += n; }
   }
-  if (hits.length) {
-    m.append(el('h2', { class: 'seccion' }, 'Dentro del texto · ' + total + (total > hits.length ? ' (primeros ' + hits.length + ')' : '')));
-    m.append(el('div', { class: 'lista' }, hits.map((h) => el('button', { class: 'hit', onclick: () => abrir(h.d, h.p, E.q.trim()) }, el('div', { class: 'de' }, h.d.titulo + ' · pág. ' + h.p), h.frag))));
+  const hits = grupos;
+  if (grupos.length) {
+    m.append(el('h2', { class: 'seccion' }, 'Dentro del texto · ' + total + ' en ' + grupos.length + (grupos.length === 1 ? ' documento' : ' documentos')));
+    const caja = el('div', { class: 'lista' });
+    for (const g of grupos.slice(0, 40)) {
+      g.h.forEach((x, j) => caja.append(el('button', { class: 'hit', onclick: () => abrir(g.d, x.p, E.q.trim()) },
+        el('div', { class: 'de' }, g.d.titulo + ' · pág. ' + x.p + (j === 0 && g.n > g.h.length ? ' · ' + g.n + ' coincidencias' : '')), x.frag)));
+    }
+    m.append(caja);
   }
-  const sinIndice = todos().filter((d) => !E.textos.has(d.id)).length;
   if (!enTitulo.length && !hits.length && !pendTitulo.length) m.append(vacio('Sin resultados para “' + E.q.trim() + '”'));
-  if (sinIndice) m.append(el('p', { class: 'nota' }, 'La búsqueda dentro del texto incluye solo los documentos guardados en el teléfono (' + E.textos.size + ' de ' + todos().length + '). Toque la flecha de un documento para incluirlo.'));
+  const sinTexto = todos().filter((d) => !textoDe(d)).length;
+  if (!E.indice.size) m.append(el('p', { class: 'nota' }, navigator.onLine ? 'Preparando la búsqueda dentro del texto de todos los documentos…' : 'Conéctese una vez a internet para buscar dentro del texto de todos los documentos.'));
+  else if (sinTexto) m.append(el('p', { class: 'nota' }, sinTexto + (sinTexto === 1 ? ' documento recién subido todavía no está' : ' documentos recién subidos todavía no están') + ' en la búsqueda; quedan listos en unos minutos.'));
 }
 
 /* ================= Favoritos ================= */
@@ -962,7 +1085,7 @@ async function abrir(d, pagina, buscar) {
   if (!pdfLib()) return aviso('El lector necesita internet la primera vez. Conéctese y vuelva a intentarlo.');
   cerrarLector(true);
   const gen = ++R.gen;
-  R.doc = d; R.blob = null; R.zoom = 1; R.hits = []; R.hit = -1; R.textos = E.textos.has(d.id) ? E.textos.get(d.id).pages : null;
+  R.doc = d; R.blob = null; R.zoom = 1; R.hits = []; R.hit = -1; R.textos = textoDe(d) ? textoDe(d).pages : null;
   $('lecTitulo').textContent = d.titulo; pintarFavLector();
   $('lecBarraBuscar').classList.add('oculto'); $('lecQ').value = ''; $('lecCuenta').textContent = '';
   const cont = $('paginas'); cont.textContent = ''; cont.append(el('div', { class: 'cargando' }, 'Abriendo…'));
@@ -1042,7 +1165,7 @@ function actualizarPag() {
   if (!R.pdf) return;
   R.actual = paginaVisible();
   $('lecPag').textContent = R.actual + ' / ' + R.pdf.numPages;
-  E.ultimo[R.doc.id] = { p: R.actual, t: Date.now() }; guardar('bv-ultimo', E.ultimo);
+  E.ultimo[R.doc.id] = { p: R.actual, n: R.pdf.numPages, t: Date.now() }; guardar('bv-ultimo', E.ultimo);
 }
 let rafPag = 0;
 $('paginas').addEventListener('scroll', () => { if (!rafPag) rafPag = requestAnimationFrame(() => { rafPag = 0; actualizarPag(); }); }, { passive: true });
@@ -1116,11 +1239,10 @@ $('q').addEventListener('input', (e) => {
   $('btnLimpiar').classList.toggle('oculto', !e.target.value);
   clearTimeout(tq); tq = setTimeout(() => { E.q = e.target.value; pintar(); }, 200);
 });
-$('q').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } });
+$('formBuscar').addEventListener('submit', (e) => { e.preventDefault(); clearTimeout(tq); E.q = $('q').value; $('q').blur(); pintar(); window.scrollTo(0, 0); });
 $('btnLimpiar').addEventListener('click', () => { $('q').value = ''; E.q = ''; $('btnLimpiar').classList.add('oculto'); pintar(); $('q').focus(); });
-$('btnRecargar').addEventListener('click', () => cargarRepo(true));
 $('btnEditar').addEventListener('click', alternarEdicion);
-$('btnAjustes').addEventListener('click', () => { E.pestana = 'ajustes'; $('q').value = ''; E.q = ''; pintar(); window.scrollTo(0, 0); });
+$('btnAjustes').addEventListener('click', () => irA_pestana('ajustes'));
 $('archivoSubir').addEventListener('change', (ev) => {
   const f = ev.target.files[0]; ev.target.value = '';
   if (!f || !subidaPendiente) return;
@@ -1144,9 +1266,11 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.ser
   pintar();
   await Promise.all([cargarLocales(), cargarTextos()]);
   pintar();
-  cargarRepo(false);
+  await cargarRepo(false);
+  cargarNovedades();
+  cargarIndice();
 })();
-window.addEventListener('online', () => cargarRepo(false));
+window.addEventListener('online', () => { cargarRepo(false); cargarIndice(); cargarNovedades(); });
 </script>
 </body>
 </html>
