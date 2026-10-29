@@ -1,11 +1,5 @@
 [
  {
-  "ruta": "documentos/espiritual/Biblia-Reina-Valera-1909.pdf",
-  "tipo": "nuevo",
-  "fecha": "2026-10-29",
-  "fuente": "https://ebible.org/pdf/spaRV1909/spaRV1909_a4.pdf"
- },
- {
   "ruta": "documentos/portuario/Convenio-MARPOL-73-78.pdf",
   "tipo": "actualizado",
   "fecha": "2026-10-29",
