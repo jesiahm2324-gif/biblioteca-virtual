@@ -451,7 +451,8 @@ const porId = (id) => todos().find((d) => d.id === id);
 function areaDeRuta(path) {
   const partes = path.split('/');
   if (partes.length < 2 || partes.some((p) => p.startsWith('.'))) return 'otros'; // p. ej. un PDF dentro de .github
-  const carpeta = plegar(partes[partes.length - 2]).replace(/[^a-z0-9]+/g, '');
+  const crudo = plegar(partes[partes.length - 2]).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  const carpeta = crudo.replace(/-/g, '');
   if (!carpeta || carpeta === 'documentos' || carpeta === 'documento') return 'otros';
   if (carpeta.startsWith('codigo')) return 'codigos';
   if (carpeta.startsWith('laboral')) return 'laboral';
@@ -459,7 +460,7 @@ function areaDeRuta(path) {
   if (carpeta.startsWith('pecuari') || carpeta.startsWith('ganad')) return 'pecuario';
   if (carpeta.startsWith('espiritu')) return 'espiritual';
   if (carpeta.startsWith('financ') || carpeta.startsWith('finanza')) return 'financiera';
-  return carpeta;
+  return crudo; // un área nueva conserva sus palabras: transporte-terrestre → «Transporte terrestre»
 }
 let RAMA = leer('bv-rama', 'main');
 // Los PDF se leen directo de GitHub: un archivo recién subido se puede abrir al instante.
@@ -714,7 +715,7 @@ function pintar() {
     el('div', { class: 'datos' },
       el('span', { class: 'ico', style: 'background:' + inf.tinte + ';color:' + inf.color }, svg(inf.icono)),
       el('div', null, el('h2', null, etiquetaArea(p)), el('div', { class: 'cnt' }, l + ' en la app' + (t > l ? ' · ' + (t - l) + ' por agregar' : ''))))));
-  if (editando() && ORDEN.includes(p)) m.append(el('div', { class: 'fila-accion' }, el('button', { class: 'btn', onclick: () => elegirParaSubir(p) }, svg(ICO.subir), 'Subir PDF a ' + etiquetaArea(p))));
+  if (editando()) m.append(el('div', { class: 'fila-accion' }, el('button', { class: 'btn', onclick: () => elegirParaSubir(p) }, svg(ICO.subir), 'Subir PDF a ' + etiquetaArea(p))));
   E.enArea = true;
   const listos = ordenar(E.docs.filter((d) => d.area === p));
   const faltan = pend.filter((c) => c.area === p);
@@ -807,8 +808,18 @@ async function activarAdmin(t) {
 /* ================= Subir PDF a GitHub ================= */
 const limpiarNombre = (n) => (n.replace(/\.pdf$/i, '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'documento') + '.pdf';
 let subidaPendiente = null;
+// Áreas a las que se puede subir o mover: las seis fijas, las que ya existan, «Otros» y una nueva.
+function destinos(excluir, accion) {
+  const lista = [...new Set(ORDEN.concat(areasPresentes(), ['otros']))].filter((a) => a !== excluir);
+  return lista.map((a) => ({ texto: etiquetaArea(a), accion: () => accion(a) }))
+    .concat([{ texto: '＋ Nueva área…', accion: () => {
+      const v = prompt('Nombre de la nueva área (por ejemplo: Transporte):', '');
+      const slug = plegar((v || '').trim()).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+      if (slug) accion(slug);
+    } }]);
+}
 function elegirParaSubir(area, archivo, clave) {
-  if (!area) return hoja('¿En qué área va el PDF?', ORDEN.map((a) => ({ texto: etiquetaArea(a), accion: () => elegirParaSubir(a) })));
+  if (!area) return hoja('¿En qué área va el PDF?', destinos(null, (a) => elegirParaSubir(a)));
   subidaPendiente = { area, archivo, clave };
   $('archivoSubir').click();
 }
@@ -827,7 +838,7 @@ function cerrarHoja() { $('hoja').classList.add('oculto'); }
 function opcionesDoc(d) {
   hoja(d.titulo, [
     { texto: 'Cambiar nombre', accion: () => cambiarNombre(d) },
-    { texto: 'Mover a otra área', accion: () => hoja('Mover «' + d.titulo + '» a…', ORDEN.filter((a) => a !== d.area).map((a) => ({ texto: etiquetaArea(a), accion: () => moverDoc(d, a) }))) },
+    { texto: 'Mover a otra área', accion: () => hoja('Mover «' + d.titulo + '» a…', destinos(d.area, (a) => moverDoc(d, a))) },
     { texto: 'Eliminar de la biblioteca', peligro: true, accion: () => eliminarDoc(d) }
   ]);
 }
