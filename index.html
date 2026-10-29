@@ -58,8 +58,8 @@ header .btn-icono.activo{background:var(--amarillo);border-color:var(--amarillo)
 .seguir .eti{font-size:11px;font-weight:600;letter-spacing:1px;color:var(--tenue)}
 .seguir .tit{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .seguir .avance{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--tenue)}
-.seguir .barra{flex:1;height:5px;border-radius:3px;background:var(--borde);overflow:hidden}
-.seguir .barra span{display:block;height:5px;background:var(--amarillo)}
+.seguir .progreso{flex:1;height:5px;border-radius:3px;background:var(--borde);overflow:hidden}
+.seguir .progreso span{display:block;height:5px;background:var(--amarillo)}
 .seguir .play{width:44px;height:44px;border-radius:22px;background:var(--amarillo);color:var(--tinta);display:flex;align-items:center;justify-content:center;flex:none}
 .bloques{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .bloque{position:relative;overflow:hidden;min-height:96px;border:0;border-radius:20px;background:var(--tarjeta);padding:14px;display:flex;flex-direction:column;justify-content:space-between;gap:10px;text-align:left}
@@ -69,10 +69,13 @@ header .btn-icono.activo{background:var(--amarillo);border-color:var(--amarillo)
 .bloque .pie-b{display:flex;align-items:baseline;justify-content:space-between;gap:8px;width:100%}
 .bloque .nom{font-size:15px;font-weight:600}
 .bloque .cnt{font-size:12px;color:var(--tenue);white-space:nowrap}
-.bloque.grande{grid-column:span 2;min-height:104px;background:var(--azul);color:#fff}
+.bloque.grande{grid-column:span 2;min-height:62px;flex-direction:row;align-items:center;justify-content:flex-start;gap:12px;padding:12px 16px 12px 14px;background:var(--azul);color:#fff}
+.bloque.grande .ico{background:rgba(255,255,255,.16);color:#fff}
+.bloque.grande .txt-g{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .bloque.grande .cnt,.bloque.grande .eti{color:#DBEAFE}
 .bloque.grande .eti{font-size:13px;font-weight:600}
-.bloque.grande .sub{font-size:20px;font-weight:700;line-height:1.2}
+.bloque.grande .sub{font-size:15px;font-weight:600;line-height:1.25}
+.bloque.grande .eti{font-size:12px;font-weight:400}
 .bloque.mis{background:transparent;border:1px dashed var(--borde);color:var(--tenue)}
 .novedad{display:flex;align-items:center;gap:10px;width:100%;border:0;background:var(--tarjeta);border-radius:14px;padding:12px 14px;text-align:left}
 .novedad .tag{flex:none;font-size:10px;font-weight:700;letter-spacing:.5px;padding:3px 7px;border-radius:6px;background:#14532D;color:#BBF7D0}
@@ -391,7 +394,7 @@ const titulo = (nombre) => {
   return t || nombre;
 };
 const cerrarPdf = (pdf) => { try { pdf.destroy ? pdf.destroy() : pdf.loadingTask.destroy(); } catch (e) {} };
-const etiquetaArea = (a) => AREAS[a] || (a === 'otros' ? 'Otros' : a === 'mis' ? 'Mis documentos' : a.charAt(0).toUpperCase() + a.slice(1).replace(/[-_]+/g, ' '));
+const etiquetaArea = (a) => (E.areas[a] && E.areas[a].nombre) || AREAS[a] || (a === 'otros' ? 'Otros' : a === 'mis' ? 'Mis documentos' : a.charAt(0).toUpperCase() + a.slice(1).replace(/[-_]+/g, ' '));
 const mb = (b) => b ? (b / 1048576 < 0.1 ? '<0.1' : (b / 1048576).toFixed(1)) + ' MB' : '';
 const leer = (k, def) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch (e) { return def; } };
 const guardar = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
@@ -435,6 +438,7 @@ const E = {
   editar: false,                     // modo edición (solo administrador)
   indice: new Map(),                 // ruta -> {pages, plegadas}: texto de todos los PDF, preparado en GitHub
   novedades: leer('bv-novedades', []),
+  areas: leer('bv-areas', {}),       // nombre y descripción que el administrador dio a cada área
   bajados: leer('bv-bajados', {}),   // id -> sha descargado
   ultimo: leer('bv-ultimo', {}),     // id -> {p, t}
   textos: new Map(),                 // id -> {pages, plegadas}
@@ -524,7 +528,7 @@ async function cargarTextos() {
 
 /* ================= Áreas: color e ícono ================= */
 const AREA_INFO = {
-  codigos: { color: '#60A5FA', tinte: '#16264A', sub: 'Penal, Civil, Familia, Comercio y más', icono: 'M4 19V5M9 19V5M14 19l3-14 3 1-3 13' },
+  codigos: { color: '#60A5FA', tinte: '#16264A', icono: 'M4 19V5M9 19V5M14 19l3-14 3 1-3 13' },
   laboral: { color: '#FACC15', tinte: '#2A2A1E', icono: 'M4 8h16v11H4zM9 8V5h6v3' },
   portuario: { color: '#22D3EE', tinte: '#132E3E', icono: 'M12 3v15M8 7h8M5 13c0 4 3 7 7 7s7-3 7-7' },
   pecuario: { color: '#FB923C', tinte: '#2E2224', icono: 'M5 20c0-6 3-11 7-14 4 3 7 8 7 14M12 6v14' },
@@ -552,6 +556,46 @@ function pintarBarra() {
 function saludo() {
   const h = new Date().getHours();
   $('saludo').textContent = h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches';
+}
+
+/* ================= Editar un área (nombre y descripción) ================= */
+const descArea = (a) => (E.areas[a] && E.areas[a].desc) || '';
+async function cargarAreas() {
+  if (!navigator.onLine) return;
+  try {
+    const r = await fetch(urlArchivo('areas.json'), { cache: 'no-store' });
+    if (r.ok) { E.areas = await r.json(); guardar('bv-areas', E.areas); pintar(); }
+  } catch (e) {}
+}
+async function guardarAreas(nuevo) {
+  const previo = E.areas; E.areas = nuevo; guardar('bv-areas', nuevo); pintar();
+  try {
+    const sha = await shaDe('areas.json');
+    const contenido = btoa(unescape(encodeURIComponent(JSON.stringify(nuevo, null, 1))));
+    const body = { message: 'Editar áreas desde la app', content: contenido, branch: RAMA };
+    if (sha) body.sha = sha;
+    const r = await gh(rutaApi('areas.json'), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    if (!r.ok) throw new Error('GitHub no aceptó el cambio (' + r.status + ').');
+    aviso('Área actualizada: lo verán todos');
+  } catch (e) {
+    E.areas = previo; guardar('bv-areas', previo); pintar();
+    aviso(navigator.onLine ? (e.message || 'No se pudo guardar.') : 'Sin conexión. Intente cuando tenga internet.', 6000);
+  }
+}
+function editarArea(a) {
+  const cambiar = (campo, pregunta, actual) => {
+    const v = prompt(pregunta + '\n(Déjelo vacío para volver al original)', actual);
+    if (v == null) return;
+    const nuevo = JSON.parse(JSON.stringify(E.areas));
+    nuevo[a] = Object.assign({}, nuevo[a]);
+    if (v.trim()) nuevo[a][campo] = v.trim(); else delete nuevo[a][campo];
+    if (!Object.keys(nuevo[a]).length) delete nuevo[a];
+    guardarAreas(nuevo);
+  };
+  hoja(etiquetaArea(a), [
+    { texto: 'Cambiar nombre del área', accion: () => cambiar('nombre', 'Nombre del área:', etiquetaArea(a)) },
+    { texto: descArea(a) ? 'Cambiar descripción' : 'Agregar descripción', accion: () => cambiar('desc', 'Descripción corta del área:', descArea(a)) }
+  ]);
 }
 
 /* ================= Novedades ================= */
@@ -674,7 +718,7 @@ function pintar() {
       const pos = E.ultimo[ult.id].p, tot = E.ultimo[ult.id].n;
       m.append(el('button', { class: 'seguir', onclick: () => abrir(ult) },
         el('span', { class: 'info' }, el('span', { class: 'eti' }, 'SEGUIR LEYENDO'), el('span', { class: 'tit' }, ult.titulo),
-          el('span', { class: 'avance' }, el('span', { class: 'barra' }, el('span', { style: 'width:' + (tot ? Math.max(3, Math.round(pos / tot * 100)) : 4) + '%' })), 'pág. ' + pos + (tot ? ' de ' + tot : ''))),
+          el('span', { class: 'avance' }, el('span', { class: 'progreso' }, el('span', { style: 'width:' + (tot ? Math.max(3, Math.round(pos / tot * 100)) : 4) + '%' })), 'pág. ' + pos + (tot ? ' de ' + tot : ''))),
         el('span', { class: 'play', 'aria-hidden': 'true' }, svg('M8 5v14l11-7z', { fill: true }))));
     }
     const novs = E.novedades.filter((n) => (Date.now() - Date.parse(n.fecha)) < 30 * 864e5).map((n) => ({ n, d: E.docs.find((x) => x.path === n.ruta) })).filter((x) => x.d).slice(0, 3);
@@ -688,10 +732,12 @@ function pintar() {
     const grid = el('div', { class: 'bloques' });
     areasPresentes().forEach((a, i) => {
       const inf = infoArea(a);
-      if (i === 0 && inf.sub) {
+      if (i === 0) {
+        const desc = descArea(a);
         grid.append(el('button', { class: 'bloque grande', onclick: () => irA_pestana(a) },
-          el('span', { class: 'pie-b' }, el('span', { class: 'eti' }, etiquetaArea(a)), el('span', { class: 'cnt' }, textoCuenta(a) + ' documentos')),
-          el('span', { class: 'sub' }, inf.sub)));
+          el('span', { class: 'ico' }, svg(inf.icono)),
+          el('span', { class: 'txt-g' }, el('span', { class: 'sub' }, etiquetaArea(a)), desc ? el('span', { class: 'eti' }, desc) : null),
+          el('span', { class: 'cnt' }, textoCuenta(a))));
         return;
       }
       grid.append(el('button', { class: 'bloque', onclick: () => irA_pestana(a) },
@@ -711,10 +757,12 @@ function pintar() {
   const { l, t } = cuenta(p);
   m.append(el('section', { class: 'heroe' },
     el('span', { class: 'franja', style: 'background:' + inf.color }),
-    el('div', { class: 'fila' }, el('button', { class: 'btn-icono', 'aria-label': 'Volver al inicio', onclick: () => irA_pestana('todos') }, svg('M15 18l-6-6 6-6'))),
+    el('div', { class: 'fila' }, el('button', { class: 'btn-icono', 'aria-label': 'Volver al inicio', onclick: () => irA_pestana('todos') }, svg('M15 18l-6-6 6-6')),
+      el('span', { style: 'flex:1' }),
+      editando() ? el('button', { class: 'btn-icono', 'aria-label': 'Editar el área: nombre y descripción', onclick: () => editarArea(p) }, svg('M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4')) : null),
     el('div', { class: 'datos' },
       el('span', { class: 'ico', style: 'background:' + inf.tinte + ';color:' + inf.color }, svg(inf.icono)),
-      el('div', null, el('h2', null, etiquetaArea(p)), el('div', { class: 'cnt' }, l + ' en la app' + (t > l ? ' · ' + (t - l) + ' por agregar' : ''))))));
+      el('div', null, el('h2', null, etiquetaArea(p)), descArea(p) ? el('div', { class: 'cnt' }, descArea(p)) : null, el('div', { class: 'cnt' }, l + ' en la app' + (t > l ? ' · ' + (t - l) + ' por agregar' : ''))))));
   if (editando()) m.append(el('div', { class: 'fila-accion' }, el('button', { class: 'btn', onclick: () => elegirParaSubir(p) }, svg(ICO.subir), 'Subir PDF a ' + etiquetaArea(p))));
   E.enArea = true;
   const listos = ordenar(E.docs.filter((d) => d.area === p));
@@ -762,7 +810,7 @@ function pintarAjustes(m) {
   m.append(el('h2', { class: 'seccion' }, 'Biblioteca'));
   m.append(el('div', { class: 'panel' },
     el('p', null, 'La lista, la búsqueda y las novedades se actualizan solas al abrir la app. Si acaba de subir algo, puede forzarlo aquí.'),
-    el('button', { class: 'btn sec', onclick: () => { cargarRepo(true); cargarIndice(); cargarNovedades(); } }, 'Actualizar ahora')));
+    el('button', { class: 'btn sec', onclick: () => { cargarRepo(true); cargarIndice(); cargarNovedades(); cargarAreas(); } }, 'Actualizar ahora')));
 
   m.append(el('h2', { class: 'seccion' }, 'Administrar la biblioteca'));
   const panel = el('div', { class: 'panel' });
@@ -1279,6 +1327,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.ser
   pintar();
   await cargarRepo(false);
   cargarNovedades();
+  cargarAreas();
   cargarIndice();
 })();
 window.addEventListener('online', () => { cargarRepo(false); cargarIndice(); cargarNovedades(); });
