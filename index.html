@@ -338,10 +338,25 @@ const ICO = {
 const FOLD = { 'á':'a','à':'a','ä':'a','â':'a','é':'e','è':'e','ë':'e','ê':'e','í':'i','ì':'i','ï':'i','î':'i','ó':'o','ò':'o','ö':'o','ô':'o','ú':'u','ù':'u','ü':'u','û':'u','ñ':'n' };
 // Misma longitud que el texto original, para poder recortar fragmentos.
 const plegar = (s) => (s || '').toLowerCase().replace(/[áàäâéèëêíìïîóòöôúùüûñ]/g, (c) => FOLD[c]);
+// Título que se muestra, ordenado a partir del nombre del archivo.
+const MENORES = new Set(['a', 'al', 'con', 'de', 'del', 'e', 'el', 'en', 'la', 'las', 'lo', 'los', 'o', 'para', 'por', 'se', 'su', 'u', 'un', 'una', 'y']);
+function ordenarMayusculas(t) {
+  return t.toLowerCase().split(' ').map((w, i) => {
+    if (/^[ivxlcdm]+$/.test(w) && w.length <= 4 && i > 0) return w.toUpperCase(); // números romanos
+    if (i > 0 && MENORES.has(w)) return w;
+    return w.replace(/^([^a-záéíóúñ]*)([a-záéíóúñ])/, (m, p, c) => p + c.toUpperCase()); // también después de «(»
+  }).join(' ');
+}
 const titulo = (nombre) => {
   let t = nombre.replace(/\.pdf$/i, '').replace(/_+/g, ' ');
   if (!/\s/.test(t)) t = t.replace(/-+/g, ' '); // Codigo-del-Trabajo -> Codigo del Trabajo
-  return t.replace(/\s+/g, ' ').trim();
+  t = t.replace(/\((z-?lib(rary)?(\.org)?)\)/ig, '').replace(/\bspanish edition\b/ig, '')
+       .replace(/^\d+\s+(?=\D)/, '')                       // "160 Padre rico" -> "Padre rico"
+       .replace(/\s*-\s*\d+\s*pa?ginas?$/i, '')           // "- 188 PAGINAS"
+       .replace(/\s+/g, ' ').replace(/^[\s\-–,]+|[\s\-–,]+$/g, '');
+  const letras = t.replace(/[^A-Za-zÁÉÍÓÚÑáéíóúñ]/g, '');
+  if (letras.length > 6 && letras === letras.toUpperCase()) t = ordenarMayusculas(t); // TODO EN MAYÚSCULAS
+  return t || nombre;
 };
 const cerrarPdf = (pdf) => { try { pdf.destroy ? pdf.destroy() : pdf.loadingTask.destroy(); } catch (e) {} };
 const etiquetaArea = (a) => AREAS[a] || (a === 'otros' ? 'Otros' : a === 'mis' ? 'Mis documentos' : a.charAt(0).toUpperCase() + a.slice(1).replace(/[-_]+/g, ' '));
@@ -701,6 +716,7 @@ function cerrarHoja() { $('hoja').classList.add('oculto'); }
 /* ================= Administrar un documento: mover y eliminar ================= */
 function opcionesDoc(d) {
   hoja(d.titulo, [
+    { texto: 'Cambiar nombre', accion: () => cambiarNombre(d) },
     { texto: 'Mover a otra área', accion: () => hoja('Mover «' + d.titulo + '» a…', ORDEN.filter((a) => a !== d.area).map((a) => ({ texto: etiquetaArea(a), accion: () => moverDoc(d, a) }))) },
     { texto: 'Eliminar de la biblioteca', peligro: true, accion: () => eliminarDoc(d) }
   ]);
@@ -733,15 +749,26 @@ async function olvidarDatos(d) {
   guardar('bv-favs', [...E.favs]); guardar('bv-ultimo', E.ultimo); guardar('bv-bajados', E.bajados);
   try { await idbDel('texto', d.id); const c = await caches.open(DOCS_CACHE); await c.delete(absoluta(d.url)); } catch (e) {}
 }
-async function moverDoc(d, area) {
-  const nombre = d.path.split('/').pop();
-  const destino = 'documentos/' + area + '/' + nombre;
-  E.ocupado[d.id] = 'Moviendo a ' + etiquetaArea(area) + '…'; pintar();
+// Nombre de archivo a partir del título: conserva tildes y espacios, quita lo que GitHub no admite.
+const archivoDeTitulo = (t) => t.replace(/[\\/:*?"<>|#%]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 150) + '.pdf';
+function cambiarNombre(d) {
+  const v = prompt('Nuevo nombre para el documento:', d.titulo);
+  if (v == null) return;
+  const nuevoTitulo = v.replace(/\.pdf$/i, '').replace(/\s+/g, ' ').trim();
+  if (!nuevoTitulo || nuevoTitulo === d.titulo) return;
+  moverDoc(d, d.area, archivoDeTitulo(nuevoTitulo));
+}
+async function moverDoc(d, area, nombreNuevo) {
+  const nombre = nombreNuevo || d.path.split('/').pop();
+  const carpeta = nombreNuevo ? d.path.split('/').slice(0, -1).join('/') : 'documentos/' + area;
+  const destino = carpeta + '/' + nombre;
+  if (destino === d.path) return;
+  E.ocupado[d.id] = nombreNuevo ? 'Cambiando nombre…' : 'Moviendo a ' + etiquetaArea(area) + '…'; pintar();
   try {
     const existe = await shaDe(destino);
-    if (existe && !confirm('Ya hay un archivo con ese nombre en ' + etiquetaArea(area) + '. ¿Reemplazarlo?')) throw new Error('');
+    if (existe && !confirm('Ya hay un archivo con ese nombre en ' + etiquetaArea(nombreNuevo ? d.area : area) + '. ¿Reemplazarlo?')) throw new Error('');
     const blob = await (await (async () => { const c = await caches.open(DOCS_CACHE); return (await c.match(absoluta(d.url))) || fetch(d.url); })()).blob();
-    const body = { message: 'Mover ' + nombre + ' a ' + area + ' desde la app', content: await base64(blob), branch: RAMA };
+    const body = { message: (nombreNuevo ? 'Renombrar a ' + nombre : 'Mover ' + nombre + ' a ' + area) + ' desde la app', content: await base64(blob), branch: RAMA };
     if (existe) body.sha = existe;
     const r = await gh(rutaApi(destino), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     if (!r.ok) throw new Error('GitHub no aceptó el archivo (' + r.status + ').');
@@ -754,7 +781,7 @@ async function moverDoc(d, area) {
     await c.delete(absoluta(d.url));
     E.docs = E.docs.filter((x) => x.id !== d.id && x.id !== nuevo.id).concat(nuevo);
     guardar('bv-lista', { t: Date.now(), docs: E.docs, vacio: false });
-    aviso('Movido a ' + etiquetaArea(area));
+    aviso(nombreNuevo ? 'Nombre cambiado' : 'Movido a ' + etiquetaArea(area));
   } catch (e) {
     if (e.message) aviso(navigator.onLine ? e.message : 'Sin conexión. Intente cuando tenga internet.', 6000);
   }
