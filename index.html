@@ -777,12 +777,22 @@ function pintar() {
   if (listos.length) m.append(lista(listos));
   if (faltan.length) m.append(el('h3', { class: 'subseccion' }, 'Por agregar · se abren en internet'), lista(faltan, tarjetaPendiente));
   const ext = externos(p);
-  if (ext.length) m.append(el('h3', { class: 'subseccion' }, 'Para leer en la página oficial · gratis'), lista(ext, tarjetaPendiente));
+  if (ext.length) m.append(el('h3', { class: 'subseccion' }, 'Guías gratuitas de instituciones oficiales'), lista(ext, tarjetaExterna));
   E.enArea = false;
   if (!listos.length && !faltan.length && !ext.length) m.append(vacio('Sin documentos en ' + etiquetaArea(p), editando() ? '' : 'Pronto se agregarán documentos en esta sección.'));
 }
 
 /* ================= Documento por agregar ================= */
+// Guía oficial gratuita: se intenta abrir en el lector de la app; si su página no lo permite, se ofrece abrirla aparte.
+function abrirExterno(c) { abrir({ id: 'ext:' + c.archivo, titulo: c.titulo, area: c.area, url: c.enlace, externo: true }); }
+function tarjetaExterna(c) {
+  const ir = () => window.open(c.enlace, '_blank', 'noopener');
+  return el('div', { class: 'doc' },
+    el('button', { class: 'abrir', onclick: () => abrirExterno(c) }, el('span', { class: 'titulo' }, c.titulo)),
+    el('div', { class: 'doc-pie' },
+      el('button', { class: 'meta-btn', onclick: () => abrirExterno(c), tabindex: '-1', 'aria-hidden': 'true' }, el('span', { class: 'tipo' }, 'PDF'), el('div', { class: 'meta' }, 'Gratis · de la página oficial')),
+      el('div', { class: 'acciones' }, el('button', { class: 'btn-icono', 'aria-label': 'Abrir en la página oficial', onclick: ir }, svg(ICO.externo)))));
+}
 function tarjetaPendiente(c) {
   const link = enlaceDe(c);
   const clave = 'cat:' + c.area + '/' + c.archivo;
@@ -1181,6 +1191,12 @@ async function abrir(d, pagina, buscar) {
     if (buscar) { $('lecBarraBuscar').classList.remove('oculto'); $('lecQ').value = buscar; buscarEnDoc(pagina); }
   } catch (e) {
     cont.textContent = '';
+    if (d.externo && navigator.onLine) {
+      cont.append(el('div', { class: 'cargando', style: 'flex-direction:column;gap:14px;padding:24px;text-align:center' },
+        el('span', null, 'La página que publica esta guía no permite mostrarla dentro de la app.'),
+        el('button', { class: 'btn', onclick: () => window.open(d.url, '_blank', 'noopener') }, svg(ICO.externo), 'Abrir el PDF')));
+      return;
+    }
     cont.append(el('div', { class: 'cargando' }, navigator.onLine ? (e.message || 'No se pudo abrir el documento.') : 'Sin conexión. Guarde el documento en el teléfono para leerlo sin internet.'));
   }
 }
@@ -1257,7 +1273,8 @@ $('lecPag').addEventListener('click', () => {
 function pintarFavLector() {
   const b = $('lecFav'); const on = R.doc && E.favs.has(R.doc.id);
   b.setAttribute('aria-pressed', String(!!on)); b.setAttribute('aria-label', on ? 'Quitar de favoritos' : 'Agregar a favoritos');
-  b.querySelector('svg').setAttribute('fill', on ? 'currentColor' : 'none'); b.style.color = on ? '#CA8A04' : '';
+  b.querySelector('svg').setAttribute('fill', on ? 'currentColor' : 'none'); b.style.color = on ? '#FACC15' : '';
+  b.classList.toggle('oculto', !!(R.doc && R.doc.externo));
 }
 $('lecFav').addEventListener('click', () => R.doc && alternarFav(R.doc.id));
 // Compartir el PDF abierto. Se llama sin esperas para que el iPhone muestre el menú de compartir.
