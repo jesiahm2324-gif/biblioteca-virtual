@@ -1,0 +1,193 @@
+name: Actualizar biblioteca
+# Se ejecuta sola:
+#  - cada vez que se sube, mueve o borra un PDF (rehace el índice de búsqueda),
+#  - cada lunes a las 3:00 a. m. de Nicaragua (revisa si las fuentes publicaron cambios),
+#  - o a mano desde Actions › Actualizar biblioteca › Run workflow.
+on:
+  push:
+    paths:
+      - 'documentos/**'
+  schedule:
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: actualizar-biblioteca
+  cancel-in-progress: false
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preparar lector de PDF
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils > /dev/null
+      - name: Revisar fuentes y rehacer el índice de búsqueda
+        shell: python3 {0}
+        run: |
+          import os, re, json, hashlib, subprocess, unicodedata, urllib.request, datetime
+
+          EVENTO = os.environ.get('GITHUB_EVENT_NAME', '')
+          HOY = datetime.date.today().isoformat()
+          L = 'https://www.leybook.com/doc/%s/pdf'
+          # área, archivo, palabras que deben estar al inicio, palabras del título que lo descartan, enlaces de origen
+          DOCS = [
+            ('codigos', 'Codigo-Penal-Ley-641.pdf', ['641', 'PENAL'], ['PROCESAL'], [L % n for n in (14255, 33929, 19503, 17639, 25595)] + ['https://perso.unifr.ch/derechopenal/assets/files/legislacion/l_20080616_67.pdf', 'https://faolex.fao.org/docs/pdf/nic86641.pdf']),
+            ('codigos', 'Codigo-Procesal-Penal-Ley-406.pdf', ['406', 'PROCESAL PENAL'], [], [L % 33285]),
+            ('codigos', 'Codigo-Civil.pdf', ['CODIGO CIVIL'], ['PROCEDIMIENTO', 'PROCESAL'], ['https://www.wipo.int/wipolex/edocs/lexdocs/laws/es/ni/ni029es.pdf', 'https://wipolex-resources-eu-central-1-358922420655.s3.amazonaws.com/edocs/lexdocs/laws/es/ni/ni029es.pdf', 'https://hse.ru/data/2024/04/17/2131146068/C%C3%93DIGO%20CIVIL%20DE%20LA%20REP%C3%9ABLICA%20DE%20NICARAGUA%20(%D0%B8%D1%81%D0%BF%D0%B0%D0%BD%D1%81%D0%BA%D0%B8%D0%B9)%20%D0%BF%D0%BE%D0%BB%D0%BD%D0%BE%D1%81%D1%82%D1%8C%D1%8E.pdf', L % 16184], 150),
+            ('codigos', 'Codigo-Procesal-Civil-Ley-902.pdf', ['902', 'PROCESAL CIVIL'], [], [L % n for n in (18416, 17610, 20145, 308)]),
+            ('codigos', 'Codigo-Procesal-del-Trabajo-Ley-815.pdf', ['815', 'PROCESAL DEL TRABAJO'], [], [L % 1371]),
+            ('codigos', 'Codigo-de-Familia-Ley-870.pdf', ['870', 'FAMILIA'], [], [L % n for n in (17642, 17928)]),
+            ('codigos', 'Codigo-de-Comercio.pdf', ['CODIGO DE COMERCIO'], ['DECRETO LEIISLATIVO', 'PROYECTO'], ['https://insolvencylawacademy.com/wp-content/uploads/2022/11/Commercial-Code-Codigo-de-Comercio.pdf'] + [L % n for n in (14612, 19403, 15999, 4833)], 80),
+            ('codigos', 'Codigo-de-la-Ninez-y-la-Adolescencia-Ley-287.pdf', ['287', 'NINEZ'], [], ['https://sajurin.enriquebolanos.org/docs/98LEY%20287.pdf', 'https://oas.org/dil/esp/codigo_de_la_ninez_y_la_adolescencia_nicaragua.pdf', 'https://cerlalc.org/wp-content/uploads/2018/09/79_Ley_287_Nicaragua.pdf', L % 592]),
+            ('laboral', 'Codigo-del-Trabajo-Ley-185.pdf', ['185', 'CODIGO DEL TRABAJO'], ['PROCESAL'], [L % n for n in (5014, 1180, 943, 672)] + ['https://sajurin.enriquebolanos.org/docs/96LEY%20185.pdf']),
+            ('laboral', 'Ley-618-Higiene-y-Seguridad-del-Trabajo.pdf', ['618', 'HIGIENE'], ['REGLAMENTO'], [L % 10445, 'https://faolex.fao.org/docs/pdf/nic201139.pdf', 'https://faolex.fao.org/docs/pdf/nic201141.pdf', 'https://cenida.una.edu.ni/relectronicos/REN363.11A798.pdf']),
+            ('laboral', 'Ley-438-Probidad-de-los-Servidores-Publicos.pdf', ['438', 'PROBIDAD'], [], [L % n for n in (826, 26950, 1199, 26745)]),
+            ('laboral', 'Ley-476-Servicio-Civil-y-Carrera-Administrativa.pdf', ['476', 'SERVICIO CIVIL'], ['REGLAMENTO'], [L % 32870]),
+            ('laboral', 'Reglamento-Ley-476.pdf', ['REGLAMENTO', '476'], [], [L % n for n in (32188, 12083)]),
+            ('laboral', 'Ley-822-Concertacion-Tributaria.pdf', ['822', 'CONCERTACION TRIBUTARIA', 'TEXTO CONSOLIDADO'], ['REGLAMENTO'], [L % n for n in (34139, 27663, 27298, 22879, 17957)]),
+            ('laboral', 'Reglamento-Ley-822.pdf', ['REGLAMENTO', '822'], ['REFORMAS Y ADICIONES', 'SIN EFECTO'], [L % n for n in (16524, 16532)] + ['https://www.icnl.org/research/library/nicaragua_regley/'], 40),
+            ('laboral', 'Ley-539-Seguridad-Social.pdf', ['539', 'SEGURIDAD SOCIAL'], ['REGLAMENTO'], [L % n for n in (976, 1021, 12501, 16839)]),
+            ('laboral', 'Reglamento-General-Ley-Seguridad-Social.pdf', ['REGLAMENTO GENERAL', 'SEGURIDAD SOCIAL'], [], [L % n for n in (27722, 7905, 6532, 17421, 8001)] + ['https://sajurin.enriquebolanos.org/docs/JGRN_0975.pdf']),
+            ('portuario', 'Ley-431-Transito.pdf', ['431', 'CIRCULACION'], [], [L % 28081]),
+            ('portuario', 'Ley-838-General-de-Puertos.pdf', ['838', 'PUERTOS'], ['REGLAMENTO'], [L % n for n in (25962, 1399)]),
+            ('portuario', 'Reglamento-Ley-838.pdf', ['REGLAMENTO', '838'], [], [L % 26169]),
+            ('portuario', 'Ley-Servicio-de-Practicaje.pdf', ['PRACTICAJE'], [], ['https://leybook.com/doc/4400/pdf']),
+            ('portuario', 'CONVEMAR-UNCLOS-1982.pdf', ['DERECHO DEL MAR'], [], ['https://www.un.org/depts/los/convention_agreements/texts/unclos/convemar_es.pdf']),
+            ('portuario', 'Ley-399-Transporte-Acuatico.pdf', ['399', 'TRANSPORTE ACUATICO'], ['REGLAMENTO'], ['https://faolex.fao.org/docs/pdf/nic30576.pdf'] + [L % n for n in (763, 33968, 31823, 32766, 31824)]),
+            ('portuario', 'Reglamento-Transporte-Acuatico-Decreto-4877.pdf', ['REGLAMENTO', 'TRANSPORTE ACUATICO'], ['RESOLUCION'], [L % n for n in (9089, 32736, 16545)] + ['https://faolex.fao.org/docs/pdf/nic185687.pdf', 'https://faolex.fao.org/docs/pdf/nic180738.pdf'] + [L % n for n in (33968, 31824, 33287, 32766, 31823)], 20),
+            ('portuario', 'Convenio-MARPOL-73-78.pdf', ['CONTAMINACION', 'BUQUES'], [], ['https://bufetedecostarica.com/wp-content/uploads/2026/10/facsimil-ley-10738-texto-integro-alcance-92-2025-df8d7b6f63.pdf', 'https://bufetedecostarica.com/wp-content/uploads/2026/10/ley-10738_convenio-internacional-para-prevenir-la-contaminacion-por-lo.pdf', 'https://ri.furg.br/images/marpol_73_78-2002-completo.pdf'], 40),
+            ('portuario', 'Convenio-BWM-2004.pdf', ['AGUA DE LASTRE'], [], ['https://www.boe.es/boe/dias/2016/11/22/pdfs/BOE-A-2016-10960.pdf', 'https://www.directemar.cl/directemar/site/docs/20170130/20170130105114/bw_convention___spanish_text.pdf']),
+            ('portuario', 'Ley-217-General-del-Medio-Ambiente.pdf', ['217', 'MEDIO AMBIENTE'], ['REGLAMENTO'], ['https://leybook.com/doc/30982/pdf', 'https://faolex.fao.org/docs/pdf/nic138661.pdf', 'https://faolex.fao.org/docs/pdf/nic177024.pdf']),
+            ('pecuario', 'Ley-291-Salud-Animal-y-Sanidad-Vegetal.pdf', ['291', 'SALUD ANIMAL'], [], ['https://www.ipsa.gob.ni/Portals/0/1%20Inocuidad%20Alimentaria/Normativas%20Generales/ACTUALIZACION%20051217/Seccion%20Carne/Ley_291.pdf', L % 5395, 'https://leybook.com/doc/601/pdf', 'https://faolex.fao.org/docs/pdf/nic14368.pdf']),
+          ]
+          REFORMA = ['LEY DE REFORMA', 'LEY DE REFORMAS', 'REFORMAS Y ADICIONES', 'REFORMA A LA LEY', 'REFORMA AL ', 'DECRETO DE REFORMA']
+
+          def cargar(ruta, defecto):
+            try:
+              with open(ruta, encoding='utf-8') as f: return json.load(f)
+            except Exception: return defecto
+
+          def huella(ruta):
+            h = hashlib.sha256()
+            with open(ruta, 'rb') as f:
+              for b in iter(lambda: f.read(1 << 20), b''): h.update(b)
+            return h.hexdigest()
+
+          def mayus(t):
+            t = unicodedata.normalize('NFKD', t).encode('ascii', 'ignore').decode().upper()
+            return re.sub(r'\s+', ' ', t)
+
+          def cabecera(ruta):
+            try: return mayus(subprocess.run(['pdftotext', '-l', '3', ruta, '-'], capture_output=True, timeout=60).stdout.decode('utf-8', 'ignore'))
+            except Exception: return ''
+
+          def paginas_de(ruta):
+            try:
+              out = subprocess.run(['pdfinfo', ruta], capture_output=True, timeout=60).stdout.decode('utf-8', 'ignore')
+              return int(re.search(r'Pages:\s+(\d+)', out).group(1))
+            except Exception: return 0
+
+          def valido(ruta, debe, descarta, minimo=3):
+            if paginas_de(ruta) < minimo: return False   # evita guardar solo un decreto o un resumen
+            t = cabecera(ruta); cab, ini = t[:220], t[:3500]
+            if not all(p in ini for p in debe) or any(p in cab for p in descarta): return False
+            consolidado = any(p in cab for p in ('TEXTO CONSOLIDADO', 'REFORMAS INCORPORADAS', 'TEXTO INTEGRO'))
+            return consolidado or not any(p in cab for p in REFORMA)
+
+          def bajar(url, destino):
+            try:
+              req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+              with urllib.request.urlopen(req, timeout=120) as r: datos = r.read(46 * 1024 * 1024)
+            except Exception: return False
+            if datos[:4] != b'%PDF' or len(datos) >= 45 * 1024 * 1024: return False
+            with open(destino, 'wb') as f: f.write(datos)
+            return True
+
+          fuentes = cargar('fuentes.json', {})
+          novedades = cargar('novedades.json', [])
+          resumen = []
+
+          def anotar(ruta, tipo, url=None):
+            novedades.insert(0, {'ruta': ruta, 'tipo': tipo, 'fecha': HOY, **({'fuente': url} if url else {})})
+
+          # 1. Revisión de fuentes (semanal o a mano)
+          if EVENTO in ('schedule', 'workflow_dispatch'):
+            for area, nombre, debe, descarta, enlaces, *resto in DOCS:
+              minimo = resto[0] if resto else 3
+              ruta = 'documentos/%s/%s' % (area, nombre)
+              tmp = '/tmp/revision.pdf'
+              if os.path.exists(ruta) and not valido(ruta, debe, descarta, minimo):
+                # El archivo que hay no es el documento completo: busca uno correcto.
+                for url in enlaces:
+                  if bajar(url, tmp) and valido(tmp, debe, descarta, minimo):
+                    os.replace(tmp, ruta); fuentes[ruta] = url; anotar(ruta, 'actualizado', url)
+                    resumen.append('| %s | **Reemplazado por el documento completo** |' % nombre); break
+                else:
+                  resumen.append('| %s | El archivo actual parece incompleto y no se halló uno mejor; revise a mano |' % nombre)
+                continue
+              if not os.path.exists(ruta):
+                for url in enlaces:
+                  if bajar(url, tmp) and valido(tmp, debe, descarta, minimo):
+                    os.makedirs(os.path.dirname(ruta), exist_ok=True); os.replace(tmp, ruta)
+                    fuentes[ruta] = url; anotar(ruta, 'nuevo', url); resumen.append('| %s | Agregado |' % nombre); break
+                else:
+                  resumen.append('| %s | Sigue sin copia confiable |' % nombre)
+                continue
+              actual = huella(ruta)
+              url = fuentes.get(ruta)
+              if not url:
+                # Primera vez: averigua de cuál enlace salió el archivo que ya está.
+                for u in enlaces:
+                  if bajar(u, tmp) and huella(tmp) == actual: fuentes[ruta] = u; break
+                resumen.append('| %s | %s |' % (nombre, 'Fuente identificada' if ruta in fuentes else 'Fuente no identificada (subido a mano o la fuente cambió)'))
+                continue
+              if not bajar(url, tmp):
+                resumen.append('| %s | Fuente no disponible esta semana |' % nombre)
+              elif huella(tmp) == actual:
+                resumen.append('| %s | Sin cambios |' % nombre)
+              elif valido(tmp, debe, descarta, minimo):
+                os.replace(tmp, ruta); anotar(ruta, 'actualizado', url)
+                resumen.append('| %s | **Actualizado** |' % nombre)
+              else:
+                resumen.append('| %s | La fuente cambió pero no pasó la comprobación; revise a mano |' % nombre)
+
+          # 2. Índice de búsqueda: el texto de cada página de cada PDF
+          indice = cargar('indice/textos.json', {})
+          primera_vez = not indice
+          nuevo = {}
+          for raiz, carpetas, archivos in os.walk('documentos'):
+            carpetas[:] = [c for c in carpetas if not c.startswith('.')]
+            for a in archivos:
+              if not a.lower().endswith('.pdf'): continue
+              ruta = os.path.join(raiz, a).replace(os.sep, '/')
+              h = huella(ruta)
+              if ruta in indice and indice[ruta].get('sha') == h:
+                nuevo[ruta] = indice[ruta]; continue
+              try: txt = subprocess.run(['pdftotext', ruta, '-'], capture_output=True, timeout=300).stdout.decode('utf-8', 'ignore')
+              except Exception: txt = ''
+              paginas = [re.sub(r'[ \t]+', ' ', re.sub(r'\s*\n\s*', '\n', p)).strip() for p in txt.split('\f')]
+              while paginas and not paginas[-1]: paginas.pop()
+              nuevo[ruta] = {'sha': h, 'paginas': paginas}
+              if not primera_vez and not any(n['ruta'] == ruta and n['fecha'] == HOY for n in novedades):
+                anotar(ruta, 'actualizado' if ruta in indice else 'nuevo')
+          os.makedirs('indice', exist_ok=True)
+          with open('indice/textos.json', 'w', encoding='utf-8') as f: json.dump(nuevo, f, ensure_ascii=False, separators=(',', ':'))
+          vivos = set(nuevo)
+          novedades = [n for n in novedades if n['ruta'] in vivos][:60]
+          with open('novedades.json', 'w', encoding='utf-8') as f: json.dump(novedades, f, ensure_ascii=False, indent=1)
+          with open('fuentes.json', 'w', encoding='utf-8') as f: json.dump(fuentes, f, ensure_ascii=False, indent=1)
+
+          sin_texto = [r for r, v in nuevo.items() if not any(v['paginas'])]
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as s:
+            s.write('## Biblioteca actualizada\n\n%d documentos en el índice de búsqueda.\n\n' % len(nuevo))
+            if resumen: s.write('### Revisión de fuentes\n\n| Documento | Resultado |\n| --- | --- |\n' + '\n'.join(resumen) + '\n\n')
+            if sin_texto: s.write('### Sin texto para buscar (PDF escaneado como imagen)\n\n' + '\n'.join('- ' + r for r in sin_texto) + '\n')
+      - name: Guardar cambios
+        run: |
+          git config user.name "Biblioteca Virtual"
+          git config user.email "actions@github.com"
+          git add documentos indice fuentes.json novedades.json
+          git diff --cached --quiet || git commit -m "Actualizar biblioteca: índice de búsqueda y novedades"
+          git pull --rebase -q || true
+          git push
