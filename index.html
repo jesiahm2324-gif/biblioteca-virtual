@@ -452,7 +452,10 @@ const E = {
   estadoRepo: 'cargando',            // cargando | ok | vacio | error
   errorRepo: ''
 };
-const todos = () => E.docs.concat(E.locales);
+// Guías oficiales gratuitas: funcionan como un documento más (estrella, guardar, buscar), pero el PDF viene de la página de la institución.
+const guiasExternas = () => CATALOGO.filter((c) => c.externo && !E.docs.some((d) => d.path && reconoce(c, d)))
+  .map((c) => ({ id: 'ext:' + c.archivo, titulo: c.titulo, area: c.area, url: c.enlace, externo: true }));
+const todos = () => E.docs.concat(guiasExternas(), E.locales);
 const porId = (id) => todos().find((d) => d.id === id);
 
 /* ================= Lista del repositorio ================= */
@@ -650,6 +653,7 @@ function tarjeta(d) {
   const nov = novedadDe(d);
   const meta = [];
   if (!E.enArea && !d.local) meta.push(etiquetaArea(d.area));
+  if (d.externo) meta.push('Gratis · página oficial');
   if (d.size) meta.push(mb(d.size));
   if (u) meta.push('pág. ' + u.p);
   const metaEl = el('div', { class: 'meta' }, meta.join(' · '));
@@ -769,7 +773,7 @@ function pintar() {
       editando() ? el('button', { class: 'btn-icono', 'aria-label': 'Editar el área: nombre y descripción', onclick: () => editarArea(p) }, svg('M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4')) : null),
     el('div', { class: 'datos' },
       el('span', { class: 'ico', style: 'background:' + inf.tinte + ';color:' + inf.color }, svg(inf.icono)),
-      el('div', null, el('h2', null, etiquetaArea(p)), descArea(p) ? el('div', { class: 'cnt' }, descArea(p)) : null, el('div', { class: 'cnt' }, l + ' en la app' + (t > l ? ' · ' + (t - l) + ' por agregar' : ''))))));
+      el('div', null, el('h2', null, etiquetaArea(p)), descArea(p) ? el('div', { class: 'cnt' }, descArea(p)) : null, el('div', { class: 'cnt' }, [l ? l + ' en la app' : '', t > l ? (t - l) + ' por agregar' : '', externos(p).length ? externos(p).length + (externos(p).length === 1 ? ' guía gratuita' : ' guías gratuitas') : ''].filter(Boolean).join(' · ') || '0 en la app')))));
   if (editando()) m.append(el('div', { class: 'fila-accion' }, el('button', { class: 'btn', onclick: () => elegirParaSubir(p) }, svg(ICO.subir), 'Subir PDF a ' + etiquetaArea(p))));
   E.enArea = true;
   const listos = ordenar(E.docs.filter((d) => d.area === p));
@@ -777,14 +781,14 @@ function pintar() {
   if (listos.length) m.append(lista(listos));
   if (faltan.length) m.append(el('h3', { class: 'subseccion' }, 'Por agregar · se abren en internet'), lista(faltan, tarjetaPendiente));
   const ext = externos(p);
-  if (ext.length) m.append(el('h3', { class: 'subseccion' }, 'Guías gratuitas de instituciones oficiales'), lista(ext, tarjetaExterna));
+  if (ext.length) m.append(el('h3', { class: 'subseccion' }, 'Guías gratuitas de instituciones oficiales'), lista(guiasExternas().filter((g) => g.area === p)));
   E.enArea = false;
   if (!listos.length && !faltan.length && !ext.length) m.append(vacio('Sin documentos en ' + etiquetaArea(p), editando() ? '' : 'Pronto se agregarán documentos en esta sección.'));
 }
 
 /* ================= Documento por agregar ================= */
 // Guía oficial gratuita: se intenta abrir en el lector de la app; si su página no lo permite, se ofrece abrirla aparte.
-function abrirExterno(c) { abrir({ id: 'ext:' + c.archivo, titulo: c.titulo, area: c.area, url: c.enlace, externo: true }); }
+function abrirExterno(c) { const d = guiasExternas().find((g) => g.id === 'ext:' + c.archivo); if (d) abrir(d); }
 function tarjetaExterna(c) {
   const ir = () => window.open(c.enlace, '_blank', 'noopener');
   return el('div', { class: 'doc' },
@@ -1110,7 +1114,7 @@ async function descargar(d) {
     if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
     aviso('Listo: ya puede leerlo sin internet');
   } catch (e) {
-    aviso(navigator.onLine ? (e.message || 'No se pudo descargar.') : 'Sin conexión. Intente cuando tenga internet.');
+    aviso(!navigator.onLine ? 'Sin conexión. Intente cuando tenga internet.' : d.externo ? 'La institución que publica esta guía no permite guardarla en la app. Puede leerla con internet.' : (e.message || 'No se pudo descargar.'), 6000);
   }
   delete E.ocupado[d.id]; pintar();
 }
@@ -1274,7 +1278,6 @@ function pintarFavLector() {
   const b = $('lecFav'); const on = R.doc && E.favs.has(R.doc.id);
   b.setAttribute('aria-pressed', String(!!on)); b.setAttribute('aria-label', on ? 'Quitar de favoritos' : 'Agregar a favoritos');
   b.querySelector('svg').setAttribute('fill', on ? 'currentColor' : 'none'); b.style.color = on ? '#FACC15' : '';
-  b.classList.toggle('oculto', !!(R.doc && R.doc.externo));
 }
 $('lecFav').addEventListener('click', () => R.doc && alternarFav(R.doc.id));
 // Compartir el PDF abierto. Se llama sin esperas para que el iPhone muestre el menú de compartir.
