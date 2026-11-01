@@ -262,6 +262,8 @@ input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none;display
 :root[data-tema] .panel,:root[data-tema] .bloque:not(.grande),:root[data-tema] .doc,:root[data-tema] .desplegable,:root[data-tema] .novedad,
 :root[data-tema] .colega,:root[data-tema] .paso,:root[data-tema] .buscador,:root[data-tema] header .btn-icono,:root[data-tema] .tema,:root[data-tema] .seguir,:root[data-tema] .aviso div{
   -webkit-backdrop-filter:blur(16px) saturate(140%);backdrop-filter:blur(16px) saturate(140%);border:1px solid var(--borde)}
+.desplegable .muestra{width:30px;height:30px;border-radius:9px;flex:none;position:relative;border:1px solid var(--borde)}
+.desplegable .muestra i{position:absolute;right:5px;top:5px;width:9px;height:9px;border-radius:5px}
 :root[data-tema] .panel .desplegable{-webkit-backdrop-filter:none;backdrop-filter:none}
 :root[data-tema] .bloque.grande{background:color-mix(in srgb,var(--azul) 80%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
 :root[data-tema] .barra-inf{background:color-mix(in srgb,var(--fondo) 62%,transparent);-webkit-backdrop-filter:blur(22px) saturate(150%);backdrop-filter:blur(22px) saturate(150%)}
@@ -1222,7 +1224,16 @@ function pintarAjustes(m) {
     temas.append(el('button', { class: 'tema', 'aria-pressed': String(sel), onclick: () => elegirTema(t.id) }, mini,
       el('span', { class: 'nom' }, t.nombre, sel ? el('span', { class: 'chk' }, svg('M5 12l5 5 9-10')) : null), el('span', { class: 'des' }, t.des)));
   }
-  m.append(el('h2', { class: 'seccion' }, 'Apariencia'), el('div', { class: 'panel' }, temas));
+  // Lista desplegable: cerrada muestra el tema actual
+  const tSel = TEMAS.find((t) => t.id === temaElegido()) || TEMAS[0];
+  const abiertaAp = !!E.aparienciaAbierta;
+  const panelAp = el('div', { class: 'panel' },
+    el('button', { class: 'desplegable', 'aria-expanded': String(abiertaAp), onclick: () => { E.aparienciaAbierta = !abiertaAp; pintar(); } },
+      el('span', { class: 'muestra', style: 'background:' + (tSel.c ? tSel.c[0] : 'linear-gradient(135deg,#16283C 50%,#E6ECF3 50%)') }, tSel.c ? el('i', { style: 'background:' + tSel.c[3] }) : null),
+      el('span', { class: 'eti', style: 'letter-spacing:0;text-transform:none;font-size:15px;color:var(--texto)' }, 'Tema: ' + tSel.nombre),
+      svg(abiertaAp ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6')));
+  if (abiertaAp) panelAp.append(temas);
+  m.append(el('h2', { class: 'seccion' }, 'Apariencia'), panelAp);
 
   m.append(el('h2', { class: 'seccion' }, 'Biblioteca'));
   m.append(el('div', { class: 'panel' },
