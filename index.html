@@ -234,8 +234,8 @@ input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none;display
     <button class="btn-icono oculto" id="btnEditar" aria-label="Modo edición" aria-pressed="false">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4"/></svg>
     </button>
-    <button class="btn-icono" id="btnAjustes" aria-label="Compartir y ajustes">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6"/></svg>
+    <button class="btn-icono" id="btnAjustes" aria-label="Ajustes">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
     </button>
   </div>
   <form class="buscador" role="search" id="formBuscar">
@@ -911,7 +911,7 @@ function tarjeta(d) {
 const ordenar = (arr) => arr.slice().sort((a, b) => a.titulo.localeCompare(b.titulo, 'es', { numeric: true }));
 function vacio(titulo, ...texto) { return el('div', { class: 'vacio' }, el('strong', null, titulo), ...texto); }
 const lista = (arr, f) => el('div', { class: 'lista' }, arr.map(f || tarjeta));
-const titulo2 = (t, explica) => [el('h2', { class: 'vista' }, t), explica ? el('p', { class: 'explica' }, explica) : null];
+const titulo2 = (t, explica) => [el('h2', { class: 'vista' }, t), explica ? el('p', { class: 'explica' }, explica) : ''];
 
 /* ================= Pantallas ================= */
 function pintar() {
@@ -925,7 +925,7 @@ function pintar() {
   const p = E.pestana;
   const recientesDocs = () => Object.entries(E.ultimo).sort((a, b) => b[1].t - a[1].t).map(([id]) => porId(id)).filter(Boolean);
 
-  if (p === 'ajustes') { m.append(...titulo2('Compartir y ajustes')); return pintarAjustes(m); }
+  if (p === 'ajustes') { m.append(...titulo2('Ajustes')); return pintarAjustes(m); }
   if (p === 'accesos' && esAdmin()) { m.append(...titulo2('Accesos', 'Solo las personas que usted invite pueden leer la biblioteca.')); return pintarAccesos(m); }
   if (p === 'favoritos') {
     const arr = ordenar(todos().filter((d) => E.favs.has(d.id)));
@@ -1057,16 +1057,19 @@ async function compartir() {
   } catch (e) { /* el usuario canceló */ }
 }
 function pintarAjustes(m) {
-  m.append(el('h2', { class: 'seccion' }, 'Compartir'));
-  m.append(el('div', { class: 'panel' },
-    el('p', null, 'Envíe este enlace por WhatsApp o correo. Quien lo abra en Safari o Chrome puede instalar la app con ', el('strong', null, 'Agregar a inicio'), '.'),
-    el('p', { class: 'url' }, URL_APP()),
-    el('button', { class: 'btn', onclick: compartir }, svg(ICO.compartir), 'Compartir la app')));
+  // Compartir la app ya no va aquí: el acceso se da desde la pestaña Accesos (solo el administrador).
+  if (!esAdmin() && E.miAcceso && E.miAcceso.ok) {
+    m.append(el('h2', { class: 'seccion' }, 'Mi acceso'));
+    m.append(el('div', { class: 'panel' },
+      el('p', null, el('strong', null, E.miAcceso.permiso === 'lectura' ? 'Solo lectura' : 'Acceso completo'), ' · ', E.miAcceso.vence ? 'vence el ' + fechaLarga(E.miAcceso.vence) : 'sin vencimiento'),
+      el('p', { class: 'nota' }, 'ID de este teléfono: ' + formatear(idTelefono()) + '. Si otra persona quiere usar la biblioteca, pídale que solicite su propio acceso al administrador.')));
+  }
   m.append(el('h2', { class: 'seccion' }, 'Biblioteca'));
   m.append(el('div', { class: 'panel' },
     el('p', null, 'La lista, la búsqueda y las novedades se actualizan solas al abrir la app. Si acaba de subir algo, puede forzarlo aquí.'),
     el('button', { class: 'btn sec', onclick: () => { cargarRepo(true); cargarIndice(); cargarNovedades(); cargarAreas(); } }, 'Actualizar ahora')));
 
+  if (!esAdmin()) return;
   m.append(el('h2', { class: 'seccion' }, 'Administrar la biblioteca'));
   const panel = el('div', { class: 'panel' });
   m.append(panel);
@@ -1076,13 +1079,6 @@ function pintarAjustes(m) {
       el('div', { class: 'fila' },
         el('button', { class: 'btn', onclick: () => elegirParaSubir(null) }, svg(ICO.subir), 'Subir otro PDF'),
         el('button', { class: 'btn sec', onclick: () => { if (confirm('¿Quitar la clave de este teléfono?')) { guardar('bv-token', null); try { localStorage.removeItem('bv-token'); } catch (e) {} pintar(); } } }, 'Quitar clave')));
-  } else {
-    const inp = el('input', { type: 'password', id: 'token', placeholder: 'Pegue aquí la clave de GitHub', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false' });
-    panel.append(
-      el('p', null, 'Solo para quien administra la biblioteca. Con la clave de GitHub puede subir PDF directo desde la app, sin crear carpetas.'),
-      el('label', { for: 'token', class: 'etiqueta' }, 'Clave de acceso de GitHub'), inp,
-      el('button', { class: 'btn', onclick: () => activarAdmin(inp.value.trim()) }, 'Activar'),
-      el('p', { class: 'nota' }, 'La clave se guarda solo en este teléfono.'));
   }
 }
 const token = () => leer('bv-token', null);
