@@ -57,7 +57,9 @@ header .btn-icono.activo{background:var(--amarillo);border-color:var(--amarillo)
 /* Barra inferior */
 .barra-inf{position:fixed;left:0;right:0;bottom:0;z-index:8;background:var(--fondo);background:color-mix(in srgb,var(--fondo) 94%,transparent);border-top:1px solid var(--borde);padding:6px 8px calc(env(safe-area-inset-bottom) + 6px);display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);backdrop-filter:blur(8px)}
 .barra-inf button{border:0;background:none;color:var(--tenue);display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;min-height:50px;justify-content:center}
-.barra-inf button[aria-current="page"]{color:var(--amarillo);font-weight:600}
+.barra-inf button svg{width:58px;height:32px;padding:5px 17px;border-radius:16px;transition:background-color .2s ease,color .2s ease}
+.barra-inf button[aria-current="page"]{color:var(--texto);font-weight:700}
+.barra-inf button[aria-current="page"] svg{background:color-mix(in srgb,var(--amarillo) 24%,transparent);color:var(--amarillo);stroke-width:2.4}
 
 /* Inicio: seguir leyendo y bloques */
 .seguir{width:100%;border:0;border-radius:18px;padding:14px 14px 14px 16px;background:var(--tarjeta);display:flex;align-items:center;gap:14px;text-align:left;margin-top:16px}
@@ -1042,6 +1044,7 @@ const titulo2 = (t, explica) => [el('h2', { class: 'vista' }, t), explica ? el('
 function pintar() {
   if (!pintarCandado()) return;
   pintarBarra(); saludo();
+  $('btnAjustes').classList.toggle('activo', E.pestana === 'ajustes' && !E.q.trim());
   const be = $('btnEditar'); be.classList.toggle('oculto', !esAdmin()); be.setAttribute('aria-pressed', String(editando())); be.classList.toggle('activo', editando());
   document.body.classList.toggle('editando', editando());
   E.enArea = false;
