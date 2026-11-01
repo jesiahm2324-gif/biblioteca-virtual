@@ -77,6 +77,9 @@ header .btn-icono.activo{background:var(--amarillo);border-color:var(--amarillo)
 .bloque.grande .sub{font-size:15px;font-weight:600;line-height:1.25}
 .bloque.grande .eti{font-size:12px;font-weight:400}
 .bloque.mis{background:transparent;border:1px dashed var(--borde);color:var(--tenue)}
+.desplegable{width:100%;display:flex;align-items:center;gap:10px;border:0;background:var(--tarjeta);border-radius:16px;padding:14px 16px;margin:16px 0 8px;color:var(--texto);text-align:left}
+.desplegable .eti{flex:1;font-size:13px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--tenue)}
+.desplegable .num{min-width:26px;height:22px;padding:0 7px;border-radius:11px;background:var(--amarillo);color:var(--tinta);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
 .novedad{display:flex;align-items:center;gap:10px;width:100%;border:0;background:var(--tarjeta);border-radius:14px;padding:12px 14px;text-align:left}
 .novedad .tag{flex:none;font-size:10px;font-weight:700;letter-spacing:.5px;padding:3px 7px;border-radius:6px;background:#14532D;color:#BBF7D0}
 .novedad .tag.act{background:#1E3A8A;color:#BFDBFE}
@@ -956,18 +959,14 @@ function pintar() {
   const textoCuenta = (a) => { const { l, t } = cuenta(a); const x = externos(a).length; return !t ? (x ? x + (x === 1 ? ' guía' : ' guías') : 'Vacía') : l === t ? String(l) : l + ' de ' + t; };
 
   if (p === 'todos') {
-    const ult = recientesDocs()[0];
-    if (ult) {
-      const pos = E.ultimo[ult.id].p, tot = E.ultimo[ult.id].n;
-      m.append(el('button', { class: 'seguir', onclick: () => abrir(ult) },
-        el('span', { class: 'info' }, el('span', { class: 'eti' }, 'SEGUIR LEYENDO'), el('span', { class: 'tit' }, ult.titulo),
-          el('span', { class: 'avance' }, el('span', { class: 'progreso' }, el('span', { style: 'width:' + (tot ? Math.max(3, Math.round(pos / tot * 100)) : 4) + '%' })), 'pág. ' + pos + (tot ? ' de ' + tot : ''))),
-        el('span', { class: 'play', 'aria-hidden': 'true' }, svg('M8 5v14l11-7z', { fill: true }))));
-    }
-    const novs = E.novedades.filter((n) => (Date.now() - Date.parse(n.fecha)) < 30 * 864e5).map((n) => ({ n, d: E.docs.find((x) => x.path === n.ruta) })).filter((x) => x.d).slice(0, 3);
+    // Novedades: lista desplegable, cerrada al abrir la app.
+    const novs = E.novedades.filter((n) => (Date.now() - Date.parse(n.fecha)) < 30 * 864e5).map((n) => ({ n, d: E.docs.find((x) => x.path === n.ruta) })).filter((x) => x.d);
     if (novs.length) {
-      m.append(el('h2', { class: 'seccion' }, 'Novedades'));
-      m.append(el('div', { class: 'lista' }, novs.map(({ n, d }) => el('button', { class: 'novedad', onclick: () => abrir(d) },
+      const abierta = !!E.novAbiertas;
+      m.append(el('button', { class: 'desplegable', 'aria-expanded': String(abierta), onclick: () => { E.novAbiertas = !abierta; pintar(); } },
+        el('span', { class: 'eti' }, 'Novedades'), el('span', { class: 'num' }, String(novs.length)),
+        svg(abierta ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6')));
+      if (abierta) m.append(el('div', { class: 'lista' }, novs.map(({ n, d }) => el('button', { class: 'novedad', onclick: () => abrir(d) },
         el('span', { class: 'tag' + (n.tipo === 'nuevo' ? '' : ' act') }, n.tipo === 'nuevo' ? 'NUEVO' : 'ACTUALIZADO'), el('span', { class: 't' }, d.titulo), el('span', { class: 'f' }, fechaCorta(n.fecha))))));
     }
     m.append(el('h2', { class: 'seccion' }, 'Áreas · ' + E.docs.length + ' documentos'));
