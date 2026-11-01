@@ -48,7 +48,7 @@ header .btn-icono.activo{background:var(--amarillo);border-color:var(--amarillo)
 .buscador .ir{flex:none;height:40px;padding:0 16px;border:0;border-radius:20px;background:var(--amarillo);color:var(--tinta);font-weight:600;font-size:14px}
 
 /* Barra inferior */
-.barra-inf{position:fixed;left:0;right:0;bottom:0;z-index:8;background:rgba(11,18,38,.96);border-top:1px solid var(--borde);padding:6px 8px calc(env(safe-area-inset-bottom) + 6px);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));backdrop-filter:blur(8px)}
+.barra-inf{position:fixed;left:0;right:0;bottom:0;z-index:8;background:rgba(11,18,38,.96);border-top:1px solid var(--borde);padding:6px 8px calc(env(safe-area-inset-bottom) + 6px);display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);backdrop-filter:blur(8px)}
 .barra-inf button{border:0;background:none;color:var(--tenue);display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;min-height:50px;justify-content:center}
 .barra-inf button[aria-current="page"]{color:var(--amarillo);font-weight:600}
 
@@ -122,6 +122,32 @@ h2.seccion{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:va
 
 header .btn-icono.activo{background:#FACC15;color:#0F172A}
 body.editando main::before{content:'Modo edición · toque ✎ arriba para terminar';display:block;margin:12px 0 0;padding:8px 12px;border-radius:12px;background:var(--amarillo);color:var(--tinta);font-size:14px;font-weight:600;text-align:center}
+/* Acceso por invitación */
+#candado{position:fixed;inset:0;z-index:30;background:var(--fondo);overflow:auto;padding:calc(env(safe-area-inset-top) + 32px) 20px 40px}
+#candado .caja{max-width:440px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+#candado .logo{width:64px;height:64px}
+#candado h2{margin:0;font-size:26px;letter-spacing:-.4px}
+#candado p{margin:0;color:var(--suave);font-size:15px}
+.pasos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.paso{background:var(--tarjeta);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:8px;font-size:13px;font-weight:600;line-height:1.3}
+.paso b{width:28px;height:28px;border-radius:14px;background:var(--amarillo);color:var(--tinta);display:flex;align-items:center;justify-content:center;font-size:14px}
+.id-telefono{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--tarjeta);border:1px dashed var(--amarillo);border-radius:16px;padding:14px 16px}
+.id-telefono span{font-size:26px;font-weight:700;letter-spacing:3px;font-family:ui-monospace,Menlo,monospace}
+.campo{display:flex;flex-direction:column;gap:6px;flex:1;min-width:0}
+.campo label{font-size:13px;color:var(--tenue);font-weight:600}
+.campo input,.campo select{height:50px;border:1px solid var(--borde);border-radius:14px;background:var(--tarjeta);color:var(--texto);padding:0 14px;font-size:16px;width:100%}
+.campo input.codigo{font-family:ui-monospace,Menlo,monospace;letter-spacing:3px;text-transform:uppercase;font-size:20px}
+.fila2{display:flex;gap:10px;flex-wrap:wrap}
+.fila2 .campo{flex:1 1 150px}
+.aviso-bloqueo{background:#3B1D24;color:#FECACA;border-radius:14px;padding:12px 14px;font-size:14px}
+.colega{background:var(--tarjeta);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.colega .nom{font-weight:600}
+.colega .det{font-size:13px;color:var(--tenue)}
+.colega .det .ok{color:var(--ok)} .colega .det .no{color:var(--peligro)}
+.colega .fila{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.colega .fila .btn{height:40px;font-size:14px;padding:0 14px}
+.codigo-gen{background:var(--tarjeta);border:1px solid var(--amarillo);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.codigo-gen .cod{font-size:30px;font-weight:700;letter-spacing:4px;font-family:ui-monospace,Menlo,monospace;color:var(--amarillo)}
 #hoja{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center}
 .hoja-fondo{position:absolute;inset:0;background:rgba(2,6,23,.55)}
 .hoja-caja{position:relative;width:100%;max-width:560px;background:var(--tarjeta);border-radius:20px 20px 0 0;padding:12px 12px calc(12px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:6px;max-height:80vh;overflow:auto}
@@ -265,6 +291,7 @@ input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none;display
 <input type="file" id="archivo" accept="application/pdf,.pdf" multiple class="oculto">
 <input type="file" id="archivoSubir" accept="application/pdf,.pdf" class="oculto">
 <div id="toast" class="oculto" role="status"></div>
+<section id="candado" class="oculto" aria-label="Acceso por invitación"></section>
 <div id="hoja" class="oculto" role="dialog" aria-modal="true" aria-labelledby="hojaTitulo">
   <div class="hoja-fondo" onclick="cerrarHoja()"></div>
   <div class="hoja-caja">
@@ -561,7 +588,8 @@ function irA_pestana(k) { E.pestana = k; $('q').value = ''; E.q = ''; $('btnLimp
 function pintarBarra() {
   const nav = $('barraInf'); nav.textContent = '';
   const activa = ORDEN.includes(E.pestana) || E.pestana === 'otros' || E.pestana === 'mis' ? 'todos' : E.pestana;
-  for (const [k, txt, ico] of PESTANAS) nav.append(el('button', { 'aria-current': activa === k && !E.q ? 'page' : null, onclick: () => irA_pestana(k) }, svg(ico), txt));
+  const pest = esAdmin() ? PESTANAS.concat([['accesos', 'Accesos', 'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21v-1a6 6 0 0 1 12 0v1M16 3.5a4 4 0 0 1 0 7M18 14a6 6 0 0 1 4 6v1']]) : PESTANAS;
+  for (const [k, txt, ico] of pest) nav.append(el('button', { 'aria-current': activa === k && !E.q ? 'page' : null, onclick: () => irA_pestana(k) }, svg(ico), txt));
 }
 function saludo() {
   const h = new Date().getHours();
@@ -606,6 +634,207 @@ function editarArea(a) {
     { texto: 'Cambiar nombre del área', accion: () => cambiar('nombre', 'Nombre del área:', etiquetaArea(a)) },
     { texto: descArea(a) ? 'Cambiar descripción' : 'Agregar descripción', accion: () => cambiar('desc', 'Descripción corta del área:', descArea(a)) }
   ]);
+}
+
+/* ================= Acceso por invitación ================= */
+// Cómo funciona:
+//  1. El colega abre la app y ve el ID de su teléfono (8 letras al azar, guardadas en ese teléfono).
+//  2. Se lo envía al administrador, quien escribe nombre, ID, plazo y permiso y genera un código.
+//  3. El colega escribe el código y entra. La app lo comprueba contra accesos.json en GitHub.
+// En accesos.json no se guarda el código, solo una huella (SHA-256) de ID + código. Los nombres
+// quedan solo en el teléfono del administrador: el repositorio es público.
+const LETRAS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+const alAzar = (n) => { const a = new Uint32Array(n); crypto.getRandomValues(a); return Array.from(a, (x) => LETRAS[x % LETRAS.length]).join(''); };
+const formatear = (t) => t.slice(0, 4) + '-' + t.slice(4);
+const limpiarCod = (t) => (t || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+async function huella(t) {
+  const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t));
+  return Array.from(new Uint8Array(b), (x) => x.toString(16).padStart(2, '0')).join('');
+}
+function idTelefono() {
+  let id = leer('bv-dispositivo', null);
+  if (!id) { id = alAzar(8); guardar('bv-dispositivo', id); }
+  return id;
+}
+E.accesos = leer('bv-accesos', null);        // copia de accesos.json
+E.miCodigo = leer('bv-mi-codigo', null);     // código que ingresó este teléfono
+E.miAcceso = leer('bv-mi-acceso', null);     // { ok, permiso, vence, motivo }
+const PLAZOS = [['', 'Indefinido'], ['1', '1 mes'], ['3', '3 meses'], ['6', '6 meses'], ['12', '1 año']];
+const PERMISOS = { completo: 'Acceso completo (leer, guardar y compartir)', lectura: 'Solo lectura' };
+const isoLocal = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+const hoyISO = () => isoLocal(new Date());
+const vencido = (v) => !!v && v < hoyISO();
+const fechaLarga = (iso) => { const [y, m, d] = iso.split('-'); return Number(d) + '/' + Number(m) + '/' + y; };
+const puedeGuardar = () => esAdmin() || !E.miAcceso || E.miAcceso.permiso !== 'lectura';
+
+async function cargarAccesos() {
+  if (!navigator.onLine) return E.accesos;
+  try {
+    const r = await fetch(urlArchivo('accesos.json') + '?t=' + Date.now(), { cache: 'no-store' });
+    if (r.status === 404) { E.accesos = { v: 1, colegas: {} }; guardar('bv-accesos', E.accesos); return E.accesos; }
+    if (r.ok) { E.accesos = await r.json(); guardar('bv-accesos', E.accesos); }
+  } catch (e) {}
+  return E.accesos;
+}
+// Comprueba si este teléfono tiene un acceso vigente.
+async function comprobarMiAcceso() {
+  if (esAdmin()) return true;
+  const id = idTelefono();
+  const lista = (E.accesos && E.accesos.colegas) || {};
+  const c = lista[id];
+  let res;
+  if (!E.miCodigo) res = { ok: false, motivo: '' };
+  else if (!c || c.h !== await huella(id + '|' + E.miCodigo)) res = { ok: false, motivo: E.accesos ? 'El código no corresponde a este teléfono.' : '' };
+  else if (c.estado === 'retirado') res = { ok: false, motivo: 'El administrador retiró su acceso.' };
+  else if (vencido(c.vence)) res = { ok: false, motivo: 'Su acceso venció el ' + fechaLarga(c.vence) + '.' };
+  else res = { ok: true, permiso: c.permiso || 'completo', vence: c.vence || null };
+  E.miAcceso = res; guardar('bv-mi-acceso', res);
+  return res.ok;
+}
+// Pinta la pantalla de invitación. Devuelve true si se puede usar la app.
+function pintarCandado() {
+  const cand = $('candado');
+  const libre = esAdmin() || (E.miAcceso && E.miAcceso.ok && !vencido(E.miAcceso.vence));
+  cand.classList.toggle('oculto', libre);
+  document.body.style.overflow = libre ? '' : 'hidden';
+  if (libre) return true;
+  if (cand.dataset.pintado === JSON.stringify(E.miAcceso)) return false;
+  cand.dataset.pintado = JSON.stringify(E.miAcceso);
+  const id = idTelefono();
+  const instalada = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  const inp = el('input', { class: 'codigo', id: 'miCodigo', placeholder: 'XXXX-XXXX', autocomplete: 'off', autocapitalize: 'characters', spellcheck: 'false', inputmode: 'text' });
+  const LOGO = document.querySelector('header .logo').cloneNode(true);
+  const textoWa = 'Hola, solicito acceso a la Biblioteca Virtual. El ID de mi teléfono es: ' + formatear(id);
+  cand.textContent = '';
+  cand.append(el('div', { class: 'caja' },
+    LOGO,
+    el('h2', null, 'Biblioteca Virtual'),
+    el('p', null, 'Esta biblioteca es por invitación. Para entrar necesita un código del administrador.'),
+    E.miAcceso && E.miAcceso.motivo ? el('div', { class: 'aviso-bloqueo' }, E.miAcceso.motivo) : null,
+    !instalada ? el('div', { class: 'aviso-bloqueo', style: 'background:#2A2A1E;color:#FDE68A' }, 'Antes de pedir el código, instale la app: toque Compartir › Agregar a inicio y ábrala desde el icono. El ID cambia si la usa desde el navegador.') : null,
+    el('div', { class: 'pasos' },
+      el('div', { class: 'paso' }, el('b', null, '1'), 'Envíe el ID de su teléfono al administrador'),
+      el('div', { class: 'paso' }, el('b', null, '2'), 'Él le responde con un código'),
+      el('div', { class: 'paso' }, el('b', null, '3'), 'Escriba el código y entre')),
+    el('div', { class: 'campo' }, el('label', null, 'ID de su teléfono'),
+      el('div', { class: 'id-telefono' }, el('span', null, formatear(id)),
+        el('button', { class: 'btn sec', style: 'height:40px;padding:0 14px', onclick: async () => { try { await navigator.clipboard.writeText(formatear(id)); aviso('ID copiado'); } catch (e) { aviso('Mantenga el dedo sobre el ID para copiarlo'); } } }, 'Copiar'))),
+    el('a', { class: 'btn', style: 'justify-content:center;text-decoration:none', href: 'https://wa.me/?text=' + encodeURIComponent(textoWa), target: '_blank', rel: 'noopener' }, 'Enviar el ID por WhatsApp'),
+    el('div', { class: 'campo' }, el('label', { for: 'miCodigo' }, 'Código de acceso'), inp),
+    el('button', { class: 'btn', style: 'justify-content:center', onclick: () => entrarConCodigo(inp.value) }, 'Entrar'),
+    el('button', { class: 'btn sec', style: 'justify-content:center;margin-top:12px', onclick: () => {
+      const t = prompt('Pegue su clave de administrador de GitHub:');
+      if (t && t.trim()) activarAdmin(t.trim());
+    } }, 'Soy el administrador')));
+  return false;
+}
+async function entrarConCodigo(v) {
+  const cod = limpiarCod(v);
+  if (cod.length !== 8) return aviso('El código tiene 8 letras y números.');
+  if (!navigator.onLine) return aviso('Conéctese a internet para comprobar el código.');
+  E.miCodigo = cod; guardar('bv-mi-codigo', cod);
+  await cargarAccesos();
+  const ok = await comprobarMiAcceso();
+  delete $('candado').dataset.pintado;
+  if (ok) { aviso('Bienvenido a la Biblioteca Virtual'); arrancarContenido(); }
+  else { if (!E.miAcceso.motivo) { E.miAcceso.motivo = 'El código no es válido.'; } pintar(); }
+}
+
+/* ----- Panel del administrador ----- */
+const nombresColegas = () => leer('bv-nombres-colegas', {});
+async function publicarAccesos(nuevo, mensaje) {
+  const sha = await shaDe('accesos.json');
+  const body = { message: mensaje, content: btoa(unescape(encodeURIComponent(JSON.stringify(nuevo, null, 1)))), branch: RAMA };
+  if (sha) body.sha = sha;
+  const r = await gh(rutaApi('accesos.json'), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  if (r.status === 401) throw new Error('La clave venció o no es válida. Actívela de nuevo.');
+  if (!r.ok) throw new Error('GitHub no aceptó el cambio (' + r.status + ').');
+  E.accesos = nuevo; guardar('bv-accesos', nuevo);
+}
+const venceDesde = (meses) => { if (!meses) return null; const d = new Date(); d.setMonth(d.getMonth() + Number(meses)); return isoLocal(d); };
+function pintarAccesos(m) {
+  const sel = (id, opciones, valor) => { const s = el('select', { id }, opciones.map(([v, t]) => el('option', { value: v }, t))); if (valor != null) s.value = valor; return s; };
+  const inNom = el('input', { id: 'acNombre', placeholder: 'Ej.: Lic. Martha López' });
+  const inId = el('input', { id: 'acId', class: 'codigo', placeholder: 'XXXX-XXXX', autocapitalize: 'characters', autocomplete: 'off', spellcheck: 'false' });
+  const selPlazo = sel('acPlazo', PLAZOS, '');
+  const selPerm = sel('acPermiso', Object.entries(PERMISOS), 'completo');
+  const resultado = el('div');
+  const invitar = () => {
+    const txt = 'Le invito a la Biblioteca Virtual: leyes, códigos y manuales en el teléfono.\n\n1) Abra este enlace en Safari o Chrome: ' + URL_APP() + '\n2) Instálela con «Agregar a inicio» y ábrala desde el icono.\n3) Envíeme el ID de teléfono que le muestra y le respondo con su código.';
+    if (navigator.share) navigator.share({ text: txt }).catch(() => {}); else window.open('https://wa.me/?text=' + encodeURIComponent(txt), '_blank', 'noopener');
+  };
+  const generar = async () => {
+    const id = limpiarCod(inId.value), nombre = inNom.value.trim();
+    if (!nombre) return aviso('Escriba el nombre del colega.');
+    if (id.length !== 8) return aviso('El ID del teléfono tiene 8 letras y números.');
+    const cod = alAzar(8);
+    const nuevo = JSON.parse(JSON.stringify(E.accesos || { v: 1, colegas: {} }));
+    nuevo.colegas = nuevo.colegas || {};
+    nuevo.colegas[id] = { h: await huella(id + '|' + cod), permiso: selPerm.value, vence: venceDesde(selPlazo.value), estado: 'activo', alta: hoyISO() };
+    try {
+      aviso('Publicando el acceso…');
+      await publicarAccesos(nuevo, 'Dar acceso a un colega');
+      aviso('Acceso publicado');
+      const nombres = nombresColegas(); nombres[id] = nombre; guardar('bv-nombres-colegas', nombres);
+      const msg = 'Hola ' + nombre + ', su código de acceso a la Biblioteca Virtual es: ' + formatear(cod) + '\nÁbrala y escríbalo en «Código de acceso».';
+      resultado.textContent = '';
+      resultado.append(el('div', { class: 'codigo-gen' },
+        el('div', { class: 'det' }, 'Código para ' + nombre + ' (solo funciona en su teléfono):'),
+        el('div', { class: 'cod' }, formatear(cod)),
+        el('a', { class: 'btn', style: 'justify-content:center;text-decoration:none', href: 'https://wa.me/?text=' + encodeURIComponent(msg), target: '_blank', rel: 'noopener' }, 'Enviar código por WhatsApp'),
+        el('p', { class: 'nota' }, 'Guárdelo o envíelo ahora: por seguridad la app no lo vuelve a mostrar.')));
+      inNom.value = ''; inId.value = '';
+      pintarListaColegas(listaCaja);
+    } catch (e) { aviso(e.message || 'No se pudo publicar.', 6000); }
+  };
+  const listaCaja = el('div', { class: 'lista' });
+  m.append(
+    el('div', { class: 'pasos', style: 'margin-top:6px' },
+      el('div', { class: 'paso' }, el('b', null, '1'), 'Invite al colega'),
+      el('div', { class: 'paso' }, el('b', null, '2'), 'Él le responde con su ID'),
+      el('div', { class: 'paso' }, el('b', null, '3'), 'Usted genera y envía el código')),
+    el('div', { class: 'fila-accion' }, el('button', { class: 'btn', onclick: invitar }, 'Invitar a un colega')),
+    el('h2', { class: 'seccion' }, 'Dar acceso a un colega'),
+    el('div', { class: 'panel', style: 'align-items:stretch' },
+      el('div', { class: 'fila2' }, el('div', { class: 'campo' }, el('label', { for: 'acNombre' }, 'Nombre del colega'), inNom),
+        el('div', { class: 'campo' }, el('label', { for: 'acId' }, 'ID de su teléfono'), inId)),
+      el('div', { class: 'fila2' }, el('div', { class: 'campo' }, el('label', { for: 'acPlazo' }, 'Plazo'), selPlazo),
+        el('div', { class: 'campo' }, el('label', { for: 'acPermiso' }, 'Permiso'), selPerm)),
+      el('button', { class: 'btn', style: 'align-self:flex-end', onclick: generar }, 'Generar código'),
+      resultado),
+    el('h2', { class: 'seccion' }, 'Colegas con acceso'),
+    listaCaja,
+    el('p', { class: 'nota' }, '«Cambiar condición» modifica plazo o permiso sin enviar código nuevo. «Retirar» bloquea la app en el teléfono del colega la próxima vez que la abra con internet.'));
+  pintarListaColegas(listaCaja);
+  cargarAccesos().then(() => pintarListaColegas(listaCaja));
+}
+function pintarListaColegas(caja) {
+  const lista = (E.accesos && E.accesos.colegas) || {};
+  const nombres = nombresColegas();
+  const ids = Object.keys(lista).sort((a, b) => (lista[b].alta || '').localeCompare(lista[a].alta || ''));
+  caja.textContent = '';
+  if (!ids.length) { caja.append(el('p', { class: 'nota' }, 'Todavía no ha dado acceso a nadie.')); return; }
+  for (const id of ids) {
+    const c = lista[id];
+    const activo = c.estado !== 'retirado' && !vencido(c.vence);
+    const estado = c.estado === 'retirado' ? el('span', { class: 'no' }, 'Retirado') : vencido(c.vence) ? el('span', { class: 'no' }, 'Vencido') : el('span', { class: 'ok' }, 'Activo');
+    const cambiar = async (cambios, msj) => {
+      const nuevo = JSON.parse(JSON.stringify(E.accesos));
+      Object.assign(nuevo.colegas[id], cambios);
+      try { await publicarAccesos(nuevo, msj); aviso('Listo'); pintarListaColegas(caja); } catch (e) { aviso(e.message, 6000); }
+    };
+    caja.append(el('div', { class: 'colega' },
+      el('div', { class: 'nom' }, nombres[id] || 'Colega sin nombre en este teléfono'),
+      el('div', { class: 'det' }, 'ID ' + formatear(id) + ' · ', estado, ' · ' + (c.permiso === 'lectura' ? 'Solo lectura' : 'Acceso completo') + ' · ' + (c.vence ? 'vence ' + fechaLarga(c.vence) : 'sin vencimiento')),
+      el('div', { class: 'fila' },
+        el('button', { class: 'btn sec', onclick: () => hoja('Cambiar condición', [
+          ...PLAZOS.map(([v, t]) => ({ texto: 'Plazo: ' + t + (v ? ' desde hoy' : ''), accion: () => cambiar({ vence: venceDesde(v), estado: 'activo' }, 'Cambiar plazo de un colega') })),
+          { texto: c.permiso === 'lectura' ? 'Permiso: acceso completo' : 'Permiso: solo lectura', accion: () => cambiar({ permiso: c.permiso === 'lectura' ? 'completo' : 'lectura' }, 'Cambiar permiso de un colega') }
+        ]) }, 'Cambiar condición'),
+        activo
+          ? el('button', { class: 'btn sec', style: 'color:var(--peligro)', onclick: () => { if (confirm('¿Retirar el acceso de ' + (nombres[id] || 'este colega') + '?')) cambiar({ estado: 'retirado' }, 'Retirar acceso de un colega'); } }, 'Retirar')
+          : el('button', { class: 'btn sec', onclick: () => cambiar({ estado: 'activo' }, 'Reactivar acceso de un colega') }, 'Reactivar'))));
+  }
 }
 
 /* ================= Novedades ================= */
@@ -664,7 +893,8 @@ function tarjeta(d) {
 
   const btnFav = el('button', { class: 'btn-icono', 'aria-pressed': String(fav), 'aria-label': fav ? 'Quitar de favoritos' : 'Agregar a favoritos', onclick: () => alternarFav(d.id) }, svg(ICO.estrella, { fill: fav }));
   let btn2;
-  if (d.local) btn2 = el('button', { class: 'btn-icono', 'aria-label': 'Eliminar del teléfono', onclick: () => eliminarLocal(d) }, svg(ICO.borrar));
+  if (!puedeGuardar() && !d.local) btn2 = null;
+  else if (d.local) btn2 = el('button', { class: 'btn-icono', 'aria-label': 'Eliminar del teléfono', onclick: () => eliminarLocal(d) }, svg(ICO.borrar));
   else btn2 = el('button', {
     class: 'btn-icono' + (bajado && !nuevo ? ' bajado' : ''), disabled: !!E.ocupado[d.id],
     'aria-label': bajado && !nuevo ? 'Quitar de Guardados' : 'Guardar para leer sin internet',
@@ -685,6 +915,7 @@ const titulo2 = (t, explica) => [el('h2', { class: 'vista' }, t), explica ? el('
 
 /* ================= Pantallas ================= */
 function pintar() {
+  if (!pintarCandado()) return;
   pintarBarra(); saludo();
   const be = $('btnEditar'); be.classList.toggle('oculto', !esAdmin()); be.setAttribute('aria-pressed', String(editando())); be.classList.toggle('activo', editando());
   document.body.classList.toggle('editando', editando());
@@ -695,6 +926,7 @@ function pintar() {
   const recientesDocs = () => Object.entries(E.ultimo).sort((a, b) => b[1].t - a[1].t).map(([id]) => porId(id)).filter(Boolean);
 
   if (p === 'ajustes') { m.append(...titulo2('Compartir y ajustes')); return pintarAjustes(m); }
+  if (p === 'accesos' && esAdmin()) { m.append(...titulo2('Accesos', 'Solo las personas que usted invite pueden leer la biblioteca.')); return pintarAccesos(m); }
   if (p === 'favoritos') {
     const arr = ordenar(todos().filter((d) => E.favs.has(d.id)));
     m.append(...titulo2('Favoritos', 'Sus documentos de consulta frecuente.'), arr.length ? lista(arr) : vacio('Sin favoritos', 'Toque la estrella ☆ de un documento para tenerlo aquí.'));
@@ -869,6 +1101,7 @@ async function activarAdmin(t) {
     const j = r.ok ? await r.json() : null;
     if (!r.ok || !j.permissions || !j.permissions.push) throw new Error(r.status === 401 ? 'La clave no es válida.' : 'La clave no tiene permiso para escribir en ' + REPO + '.');
     aviso('Listo: modo administrador activo');
+    arrancarContenido();
   } catch (e) {
     try { localStorage.removeItem('bv-token'); } catch (x) {}
     aviso(e.message || 'No se pudo comprobar la clave.', 5000);
@@ -1282,6 +1515,7 @@ function pintarFavLector() {
 $('lecFav').addEventListener('click', () => R.doc && alternarFav(R.doc.id));
 // Compartir el PDF abierto. Se llama sin esperas para que el iPhone muestre el menú de compartir.
 $('lecCompartir').addEventListener('click', () => {
+  if (!puedeGuardar()) return aviso('Su acceso es de solo lectura.');
   const d = R.doc; if (!d) return;
   if (!R.blob) return aviso('Espere a que termine de abrir el documento.');
   const nombre = d.path ? d.path.split('/').pop() : limpiarNombre(d.titulo);
@@ -1350,16 +1584,29 @@ $('cerrarAviso').addEventListener('click', () => { $('avisoIos').classList.add('
 if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
 /* ================= Inicio ================= */
-(async function iniciar() {
+let contenidoCargado = false;
+async function arrancarContenido() {
   pintar();
+  if (contenidoCargado || !pintarCandado()) return;
+  contenidoCargado = true;
   await Promise.all([cargarLocales(), cargarTextos()]);
   pintar();
   await cargarRepo(false);
   cargarNovedades();
   cargarAreas();
   cargarIndice();
+}
+(async function iniciar() {
+  // Con una verificación guardada, la app abre al instante (también sin internet) y se vuelve a comprobar por detrás.
+  arrancarContenido();
+  if (!esAdmin()) {
+    await cargarAccesos();
+    await comprobarMiAcceso();
+    if (!pintarCandado()) { pintar(); return; }
+    arrancarContenido();
+  }
 })();
-window.addEventListener('online', () => { cargarRepo(false); cargarIndice(); cargarNovedades(); });
+window.addEventListener('online', async () => { if (!esAdmin()) { await cargarAccesos(); await comprobarMiAcceso(); pintar(); } if (contenidoCargado) { cargarRepo(false); cargarIndice(); cargarNovedades(); } });
 </script>
 </body>
 </html>
