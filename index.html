@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Biblioteca Virtual</title>
 <meta name="description" content="Leyes, códigos, normas y manuales para consultar en el teléfono, también sin internet.">
-<meta name="theme-color" content="#0B1226">
+<meta name="theme-color" content="#E5ECE6">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -15,6 +15,13 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script>
+(function () {
+  var t = 'salvia'; try { t = JSON.parse(localStorage.getItem('bv-tema')) || 'salvia'; } catch (e) {}
+  if (t === 'auto') t = window.matchMedia('(prefers-color-scheme: light)').matches ? 'bruma' : 'oceano';
+  if (t !== 'noche') document.documentElement.setAttribute('data-tema', t);
+})();
+</script>
 <style>
 :root{
   --azul:#1D4ED8; --azul-claro:#60A5FA; --amarillo:#FACC15; --tinta:#0B1226;
@@ -48,7 +55,7 @@ header .btn-icono.activo{background:var(--amarillo);border-color:var(--amarillo)
 .buscador .ir{flex:none;height:40px;padding:0 16px;border:0;border-radius:20px;background:var(--amarillo);color:var(--tinta);font-weight:600;font-size:14px}
 
 /* Barra inferior */
-.barra-inf{position:fixed;left:0;right:0;bottom:0;z-index:8;background:rgba(11,18,38,.96);border-top:1px solid var(--borde);padding:6px 8px calc(env(safe-area-inset-bottom) + 6px);display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);backdrop-filter:blur(8px)}
+.barra-inf{position:fixed;left:0;right:0;bottom:0;z-index:8;background:var(--fondo);background:color-mix(in srgb,var(--fondo) 94%,transparent);border-top:1px solid var(--borde);padding:6px 8px calc(env(safe-area-inset-bottom) + 6px);display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);backdrop-filter:blur(8px)}
 .barra-inf button{border:0;background:none;color:var(--tenue);display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;min-height:50px;justify-content:center}
 .barra-inf button[aria-current="page"]{color:var(--amarillo);font-weight:600}
 
@@ -123,7 +130,7 @@ h2.seccion{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:va
 .doc .btn-icono:active{background:var(--celeste)}
 .doc .btn-icono:disabled{opacity:.5}
 
-header .btn-icono.activo{background:#FACC15;color:#0F172A}
+header .btn-icono.activo{background:var(--amarillo);color:var(--tinta)}
 body.editando main::before{content:'Modo edición · toque ✎ arriba para terminar';display:block;margin:12px 0 0;padding:8px 12px;border-radius:12px;background:var(--amarillo);color:var(--tinta);font-size:14px;font-weight:600;text-align:center}
 /* Acceso por invitación */
 #candado{position:fixed;inset:0;z-index:30;background:var(--fondo);overflow:auto;padding:calc(env(safe-area-inset-top) + 32px) 20px 40px}
@@ -143,6 +150,7 @@ body.editando main::before{content:'Modo edición · toque ✎ arriba para termi
 .fila2{display:flex;gap:10px;flex-wrap:wrap}
 .fila2 .campo{flex:1 1 150px}
 .aviso-bloqueo{background:#3B1D24;color:#FECACA;border-radius:14px;padding:12px 14px;font-size:14px}
+.aviso-bloqueo.aviso-instalar{background:color-mix(in srgb,var(--amarillo) 14%,var(--tarjeta)) !important;color:var(--texto) !important;border:1px solid var(--borde)}
 .colega{background:var(--tarjeta);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:6px}
 .colega .nom{font-weight:600}
 .colega .det{font-size:13px;color:var(--tenue)}
@@ -223,6 +231,87 @@ input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none;display
 .cargando{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--suave);font-size:15px}
 
 #toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#EEF2FF;color:#0B1226 !important;color:#fff;padding:12px 16px;border-radius:12px;font-size:15px;z-index:40;max-width:calc(100% - 32px);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+
+/* ===== Apariencia (temas) ===== */
+/* Temas de cristal: colores suaves y tarjetas translúcidas sobre un fondo degradado */
+:root[data-tema="bruma"]{
+  --fondo:#E6ECF3; --grad:linear-gradient(165deg,#F1F4F8 0%,#DDE5EE 55%,#E6E2EE 100%);
+  --tarjeta:rgba(255,255,255,.55); --tarjeta2:rgba(255,255,255,.38); --solido:#F4F7FA; --borde:rgba(36,48,66,.09);
+  --texto:#243042; --suave:#3E4A5C; --tenue:#6B7789; --amarillo:#5577A8; --tinta:#FFFFFF; --azul:#5B7DB1; --azul-claro:#3F619A;
+  --celeste:rgba(255,255,255,.45); --ok:#3F8F6B; --peligro:#BE5A5F; --lector:#DCE3EA;
+}
+:root[data-tema="arena"]{
+  --fondo:#EFE8DC; --grad:linear-gradient(165deg,#F6F1E8 0%,#EADFCF 60%,#EEE5D9 100%);
+  --tarjeta:rgba(255,251,244,.58); --tarjeta2:rgba(255,251,244,.4); --solido:#F7F2EA; --borde:rgba(80,60,30,.10);
+  --texto:#3A3128; --suave:#54493D; --tenue:#85796A; --amarillo:#A8774A; --tinta:#FFFFFF; --azul:#A07D58; --azul-claro:#8A6440;
+  --celeste:rgba(255,251,244,.45); --ok:#5E8A5A; --peligro:#B3564B; --lector:#E4DBCC;
+}
+:root[data-tema="salvia"]{
+  --fondo:#E5ECE6; --grad:linear-gradient(165deg,#EFF4EF 0%,#DAE6DD 55%,#E4EBE7 100%);
+  --tarjeta:rgba(255,255,255,.55); --tarjeta2:rgba(255,255,255,.38); --solido:#F2F6F2; --borde:rgba(36,51,42,.09);
+  --texto:#22302A; --suave:#3C4C43; --tenue:#6A7A70; --amarillo:#4F8068; --tinta:#FFFFFF; --azul:#5E8B73; --azul-claro:#3F6E57;
+  --celeste:rgba(255,255,255,.45); --ok:#3F8F6B; --peligro:#B85C5C; --lector:#DCE5DE;
+}
+:root[data-tema="oceano"]{
+  --fondo:#0F1B26; --grad:linear-gradient(165deg,#16283C 0%,#0F1D2B 50%,#11282F 100%);
+  --tarjeta:rgba(255,255,255,.06); --tarjeta2:rgba(255,255,255,.09); --solido:#18283A; --borde:rgba(255,255,255,.09);
+  --texto:#DCE4EC; --suave:#B9C5D1; --tenue:#8798A9; --amarillo:#7CC4B4; --tinta:#0B1E1A; --azul:#2F5F80; --azul-claro:#9FD3C7;
+  --celeste:rgba(255,255,255,.07); --ok:#7CC4B4; --peligro:#E59A9A; --lector:#0A121A;
+}
+:root[data-tema] body::before{content:"";position:fixed;inset:0;z-index:-1;background:var(--grad);pointer-events:none}
+:root[data-tema] .panel,:root[data-tema] .bloque:not(.grande),:root[data-tema] .doc,:root[data-tema] .desplegable,:root[data-tema] .novedad,
+:root[data-tema] .colega,:root[data-tema] .paso,:root[data-tema] .buscador,:root[data-tema] header .btn-icono,:root[data-tema] .tema,:root[data-tema] .seguir,:root[data-tema] .aviso div{
+  -webkit-backdrop-filter:blur(16px) saturate(140%);backdrop-filter:blur(16px) saturate(140%);border:1px solid var(--borde)}
+:root[data-tema] .panel .desplegable{-webkit-backdrop-filter:none;backdrop-filter:none}
+:root[data-tema] .bloque.grande{background:color-mix(in srgb,var(--azul) 80%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+:root[data-tema] .barra-inf{background:color-mix(in srgb,var(--fondo) 62%,transparent);-webkit-backdrop-filter:blur(22px) saturate(150%);backdrop-filter:blur(22px) saturate(150%)}
+:root[data-tema] .hoja-caja{background:var(--solido)}
+:root[data-tema] .hoja-op{background:var(--tarjeta2)}
+:root[data-tema] .hoja-fondo{background:rgba(15,23,42,.30)}
+:root[data-tema] #candado{background:var(--grad)}
+:root[data-tema]:not([data-tema="oceano"]) .novedad .tag{background:rgba(63,143,107,.16);color:#2F6B50}
+:root[data-tema]:not([data-tema="oceano"]) .novedad .tag.act{background:rgba(85,119,168,.16);color:#3F5F8E}
+:root[data-tema]:not([data-tema="oceano"]) .aviso-bloqueo{background:rgba(190,90,95,.14);color:#8E3B40}
+:root[data-tema]:not([data-tema="oceano"]) #toast{background:#2A3444;color:#fff !important}
+:root[data-tema="oceano"] .novedad .tag{background:rgba(124,196,180,.16);color:#9FD3C7}
+:root[data-tema="oceano"] .novedad .tag.act{background:rgba(120,160,210,.16);color:#AFC6E6}
+body,.panel,.bloque,.doc,.barra-inf,header .btn-icono,.buscador{transition:background-color .35s ease,border-color .35s ease,color .35s ease}
+
+/* Movimiento suave al cambiar de pantalla y al tocar */
+@media (prefers-reduced-motion: no-preference){
+  #contenido > *{animation:entrar .32s cubic-bezier(.2,.7,.2,1) both}
+  #contenido > *:nth-child(2){animation-delay:.03s} #contenido > *:nth-child(3){animation-delay:.06s} #contenido > *:nth-child(4){animation-delay:.09s} #contenido > *:nth-child(n+5){animation-delay:.12s}
+  @keyframes entrar{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .bloque,.doc,.btn,.novedad,.desplegable,.tema{transition:transform .12s ease}
+  .bloque:active,.btn:active,.novedad:active,.desplegable:active,.tema:active{transform:scale(.97)}
+}
+
+/* Selector de apariencia */
+.temas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;width:100%}
+.tema{border:2px solid var(--borde);border-radius:16px;padding:8px;background:var(--tarjeta2);text-align:left;display:flex;flex-direction:column;gap:8px;color:var(--texto)}
+.tema[aria-pressed="true"]{border-color:var(--amarillo)}
+.tema .mini{height:74px;border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:6px;position:relative;overflow:hidden}
+.tema .mini i{display:block;border-radius:5px}
+.tema .mini .b1{height:12px;width:70%}
+.tema .mini .b2{height:20px;border-radius:7px}
+.tema .mini .b3{display:flex;gap:6px;flex:1}
+.tema .mini .b3 i{flex:1;border-radius:7px}
+.tema .mini .pto{position:absolute;right:8px;top:8px;width:14px;height:14px;border-radius:7px}
+.tema .mini.auto{background:linear-gradient(135deg,#16283C 50%,#E6ECF3 50%)}
+.tema .nom{font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:0 4px}
+.tema .des{font-size:12px;color:var(--tenue);padding:0 4px 2px;line-height:1.3}
+.tema .chk{width:20px;height:20px;border-radius:10px;background:var(--amarillo);color:var(--tinta);display:inline-flex;align-items:center;justify-content:center;flex:none}
+/* Lista de personas con acceso (Ajustes) */
+.persona{display:flex;align-items:center;gap:12px;width:100%;padding:10px 0;border-top:1px solid var(--borde)}
+.persona:first-child{border-top:0}
+.persona .av{width:38px;height:38px;border-radius:19px;background:var(--tarjeta2);color:var(--amarillo);font-weight:700;display:flex;align-items:center;justify-content:center;flex:none;font-size:14px}
+.persona .tx{flex:1;min-width:0;display:flex;flex-direction:column}
+.persona .tx b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.persona .tx span{font-size:12px;color:var(--tenue)}
+.estado{font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px;flex:none}
+.estado.si{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
+.estado.no{background:color-mix(in srgb,var(--peligro) 18%,transparent);color:var(--peligro)}
+.panel .desplegable{margin:0;padding:0;background:transparent;box-shadow:none !important;border:0 !important}
 </style>
 </head>
 <body>
@@ -575,7 +664,14 @@ const AREA_INFO = {
   espiritual: { color: '#C4B5FD', tinte: '#252545', icono: 'M12 3v18M7 8h10' },
   financiera: { color: '#F472B6', tinte: '#2E1F3A', icono: 'M4 19h16M7 16V10M12 16V6M17 16v-4' }
 };
-const infoArea = (a) => AREA_INFO[a] || { color: '#94A3C7', tinte: '#1A2547', icono: 'M6 3h9l4 4v14H6zM14 3v5h5' };
+const COLOR_SUAVE = { codigos: '#4A6FA5', laboral: '#A8792A', portuario: '#3B8A9A', pecuario: '#B5653F', espiritual: '#7A68A8', financiera: '#A85A7E' };
+const infoArea = (a) => {
+  const base = AREA_INFO[a] || { color: '#94A3C7', tinte: '#1A2547', icono: 'M6 3h9l4 4v14H6zM14 3v5h5' };
+  const t = temaActivo();
+  if (t === 'noche') return base;
+  const color = t !== 'oceano' ? (COLOR_SUAVE[a] || '#6B7789') : base.color;
+  return { color, icono: base.icono, tinte: 'color-mix(in srgb,' + color + ' 16%,var(--tarjeta))' };
+};
 function areasPresentes() {
   const s = new Set(E.docs.map((d) => d.area));
   const extra = [...s].filter((a) => !ORDEN.includes(a) && a !== 'otros').sort();
@@ -638,6 +734,30 @@ function editarArea(a) {
     { texto: descArea(a) ? 'Cambiar descripción' : 'Agregar descripción', accion: () => cambiar('desc', 'Descripción corta del área:', descArea(a)) }
   ]);
 }
+
+/* ================= Apariencia ================= */
+const TEMAS = [
+  { id: 'salvia', nombre: 'Salvia', des: 'Verde suave y natural. El de entrada.', c: ['linear-gradient(165deg,#EFF4EF,#DAE6DD 55%,#E4EBE7)', 'rgba(255,255,255,.6)', 'rgba(94,139,115,.8)', '#4F8068'] },
+  { id: 'bruma', nombre: 'Bruma', des: 'Gris azulado claro, como cristal empañado.', c: ['linear-gradient(165deg,#F1F4F8,#DDE5EE 55%,#E6E2EE)', 'rgba(255,255,255,.6)', 'rgba(91,125,177,.8)', '#5577A8'] },
+  { id: 'arena', nombre: 'Arena', des: 'Tono papel cálido, el más descansado para leer.', c: ['linear-gradient(165deg,#F6F1E8,#EADFCF 60%,#EEE5D9)', 'rgba(255,251,244,.65)', 'rgba(160,125,88,.8)', '#A8774A'] },
+  { id: 'oceano', nombre: 'Océano nocturno', des: 'Oscuro translúcido, para la noche.', c: ['linear-gradient(165deg,#16283C,#0F1D2B 50%,#11282F)', 'rgba(255,255,255,.08)', 'rgba(47,95,128,.8)', '#7CC4B4'] },
+  { id: 'noche', nombre: 'Noche azul', des: 'El diseño anterior.', c: ['#0B1226', '#121B36', '#1D4ED8', '#FACC15'] },
+  { id: 'auto', nombre: 'Automático', des: 'Bruma de día y Océano nocturno de noche, según el teléfono.', c: null }
+];
+const temaElegido = () => leer('bv-tema', 'salvia');
+function temaActivo() {
+  const t = temaElegido();
+  return t === 'auto' ? (window.matchMedia('(prefers-color-scheme: light)').matches ? 'bruma' : 'oceano') : t;
+}
+function aplicarTema() {
+  const t = temaActivo();
+  if (t === 'noche') document.documentElement.removeAttribute('data-tema'); else document.documentElement.setAttribute('data-tema', t);
+  const fondo = getComputedStyle(document.documentElement).getPropertyValue('--fondo').trim();
+  document.querySelector('meta[name="theme-color"]').setAttribute('content', fondo || '#0B1226');
+}
+function elegirTema(id) { guardar('bv-tema', id); aplicarTema(); pintar(); }
+aplicarTema();
+try { window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => { if (temaElegido() === 'auto') { aplicarTema(); pintar(); } }); } catch (e) {}
 
 /* ================= Acceso por invitación ================= */
 // Cómo funciona:
@@ -714,7 +834,7 @@ function pintarCandado() {
     el('h2', null, 'Biblioteca Virtual'),
     el('p', null, 'Esta biblioteca es por invitación. Para entrar necesita un código del administrador.'),
     E.miAcceso && E.miAcceso.motivo ? el('div', { class: 'aviso-bloqueo' }, E.miAcceso.motivo) : null,
-    !instalada ? el('div', { class: 'aviso-bloqueo', style: 'background:#2A2A1E;color:#FDE68A' }, 'Antes de pedir el código, instale la app: toque Compartir › Agregar a inicio y ábrala desde el icono. El ID cambia si la usa desde el navegador.') : null,
+    !instalada ? el('div', { class: 'aviso-bloqueo aviso-instalar' }, 'Antes de pedir el código, instale la app: toque Compartir › Agregar a inicio y ábrala desde el icono. El ID cambia si la usa desde el navegador.') : null,
     el('div', { class: 'pasos' },
       el('div', { class: 'paso' }, el('b', null, '1'), 'Envíe el ID de su teléfono al administrador'),
       el('div', { class: 'paso' }, el('b', null, '2'), 'Él le responde con un código'),
@@ -1063,6 +1183,47 @@ function pintarAjustes(m) {
       el('p', null, el('strong', null, E.miAcceso.permiso === 'lectura' ? 'Solo lectura' : 'Acceso completo'), ' · ', E.miAcceso.vence ? 'vence el ' + fechaLarga(E.miAcceso.vence) : 'sin vencimiento'),
       el('p', { class: 'nota' }, 'ID de este teléfono: ' + formatear(idTelefono()) + '. Si otra persona quiere usar la biblioteca, pídale que solicite su propio acceso al administrador.')));
   }
+  // Personas con acceso (solo el administrador), como lista desplegable
+  if (esAdmin()) {
+    const lista = (E.accesos && E.accesos.colegas) || {};
+    const nombres = nombresColegas();
+    const vig = (id) => lista[id].estado !== 'retirado' && !vencido(lista[id].vence);
+    const ids = Object.keys(lista).sort((a, b) => (vig(b) - vig(a)) || (nombres[a] || '~').localeCompare(nombres[b] || '~', 'es'));
+    const activos = ids.filter((id) => lista[id].estado !== 'retirado' && !vencido(lista[id].vence));
+    const abierta = !!E.personasAbiertas;
+    const panel = el('div', { class: 'panel' },
+      el('button', { class: 'desplegable', 'aria-expanded': String(abierta), onclick: () => { E.personasAbiertas = !abierta; pintar(); } },
+        el('span', { class: 'eti' }, 'Personas con acceso'), el('span', { class: 'num' }, String(activos.length)), svg(abierta ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6')));
+    if (abierta) {
+      const cont = el('div', { style: 'width:100%' });
+      if (!ids.length) cont.append(el('p', { class: 'nota' }, 'Todavía no ha invitado a nadie.'));
+      for (const id of ids) {
+        const c = lista[id], ok = c.estado !== 'retirado' && !vencido(c.vence), nom = nombres[id] || 'Sin nombre (ID ' + formatear(id) + ')';
+        const ini = nom.replace(/^(lic|dr|dra|ing|sr|sra)\.?\s+/i, '').split(/\s+/).slice(0, 2).map((x) => x[0] || '').join('').toUpperCase();
+        cont.append(el('div', { class: 'persona' }, el('span', { class: 'av' }, ini || '?'),
+          el('span', { class: 'tx' }, el('b', null, nom), el('span', null, (c.permiso === 'lectura' ? 'Solo lectura' : 'Acceso completo') + ' · ' + (c.vence ? 'hasta ' + fechaLarga(c.vence) : 'sin vencimiento') + (c.alta ? ' · desde ' + fechaLarga(c.alta) : ''))),
+          el('span', { class: 'estado ' + (ok ? 'si' : 'no') }, c.estado === 'retirado' ? 'Retirado' : ok ? 'Activo' : 'Vencido')));
+      }
+      cont.append(el('div', { class: 'fila', style: 'margin-top:10px' }, el('button', { class: 'btn sec', onclick: () => irA_pestana('accesos') }, 'Invitar o cambiar condiciones')));
+      panel.append(cont);
+    }
+    m.append(el('h2', { class: 'seccion' }, 'Usuarios'), panel);
+    if (!E.accesosPedidos) { E.accesosPedidos = true; cargarAccesos().then(() => pintar()); }
+  }
+
+  // Apariencia
+  const temas = el('div', { class: 'temas' });
+  for (const t of TEMAS) {
+    const sel = temaElegido() === t.id;
+    const mini = t.c
+      ? el('span', { class: 'mini', style: 'background:' + t.c[0] }, el('i', { class: 'b1', style: 'background:' + t.c[1] }), el('i', { class: 'b2', style: 'background:' + t.c[2] }),
+          el('span', { class: 'b3' }, el('i', { style: 'background:' + t.c[1] }), el('i', { style: 'background:' + t.c[1] })), el('i', { class: 'pto', style: 'background:' + t.c[3] }))
+      : el('span', { class: 'mini auto' });
+    temas.append(el('button', { class: 'tema', 'aria-pressed': String(sel), onclick: () => elegirTema(t.id) }, mini,
+      el('span', { class: 'nom' }, t.nombre, sel ? el('span', { class: 'chk' }, svg('M5 12l5 5 9-10')) : null), el('span', { class: 'des' }, t.des)));
+  }
+  m.append(el('h2', { class: 'seccion' }, 'Apariencia'), el('div', { class: 'panel' }, temas));
+
   m.append(el('h2', { class: 'seccion' }, 'Biblioteca'));
   m.append(el('div', { class: 'panel' },
     el('p', null, 'La lista, la búsqueda y las novedades se actualizan solas al abrir la app. Si acaba de subir algo, puede forzarlo aquí.'),
