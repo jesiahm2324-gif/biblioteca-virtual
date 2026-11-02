@@ -1,5 +1,23 @@
 [
  {
+  "ruta": "documentos/espiritual/Biblia-Reina-Valera-1909.pdf",
+  "tipo": "nuevo",
+  "fecha": "2026-11-02",
+  "fuente": "https://ebible.org/pdf/spaRV1909/spaRV1909_a4.pdf"
+ },
+ {
+  "ruta": "documentos/portuario/Reglamento-Transporte-Acuatico-Decreto-4877.pdf",
+  "tipo": "actualizado",
+  "fecha": "2026-11-02",
+  "fuente": "https://www.leybook.com/doc/9089/pdf"
+ },
+ {
+  "ruta": "documentos/laboral/Reglamento-Ley-822.pdf",
+  "tipo": "actualizado",
+  "fecha": "2026-11-02",
+  "fuente": "https://www.leybook.com/doc/16524/pdf"
+ },
+ {
   "ruta": "documentos/portuario/Convenio-MARPOL-73-78.pdf",
   "tipo": "actualizado",
   "fecha": "2026-10-29",
